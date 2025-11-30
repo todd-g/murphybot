@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto, Playfair_Display, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/lib/convex";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const roboto = Roboto({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-serif",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const firaCode = Fira_Code({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -24,13 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark theme">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-subtle min-h-screen`}
+        className={`${roboto.variable} ${playfairDisplay.variable} ${firaCode.variable} font-sans antialiased bg-gradient-subtle min-h-screen`}
       >
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
 }
-
