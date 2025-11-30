@@ -98,7 +98,7 @@ export default function CapturePage() {
         </Link>
 
         {/* Capture form */}
-        <Card className="opacity-0 animate-fade-in">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <Image
@@ -106,7 +106,6 @@ export default function CapturePage() {
                 alt="MurphyBot"
                 width={48}
                 height={48}
-                className="drop-shadow-md"
               />
               <CardTitle className="text-2xl">Quick Capture</CardTitle>
             </div>
@@ -195,11 +194,10 @@ export default function CapturePage() {
         </Card>
 
         {/* Help text */}
-        <p className="text-center text-sm text-muted-foreground opacity-0 animate-fade-in stagger-1">
+        <p className="text-center text-sm text-muted-foreground">
           Captures are saved to your inbox for processing with Claude in Cursor.
         </p>
       </div>
     </main>
   );
 }
-

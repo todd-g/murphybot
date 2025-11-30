@@ -70,14 +70,13 @@ export default function AskPage() {
         </Link>
 
         {/* Header */}
-        <div className="text-center space-y-2 opacity-0 animate-fade-in">
+        <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-3">
             <Image
               src="/logo.png"
               alt="MurphyBot"
               width={48}
               height={48}
-              className="drop-shadow-md"
             />
             <h1 className="text-2xl font-bold">Ask My Brain</h1>
           </div>
@@ -87,7 +86,7 @@ export default function AskPage() {
         </div>
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto space-y-4 opacity-0 animate-fade-in stagger-1">
+        <div className="flex-1 overflow-y-auto space-y-4">
           {messages.length === 0 ? (
             <Card className="border-dashed">
               <CardHeader className="text-center">
@@ -146,10 +145,7 @@ export default function AskPage() {
         </div>
 
         {/* Input form */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex gap-2 opacity-0 animate-fade-in stagger-2"
-        >
+        <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -165,4 +161,3 @@ export default function AskPage() {
     </main>
   );
 }
-

@@ -10,14 +10,13 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="max-w-2xl w-full space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4 opacity-0 animate-fade-in">
+        <div className="text-center space-y-4">
           <div className="flex flex-col items-center justify-center gap-2">
             <Image
               src="/logo.png"
               alt="MurphyBot"
               width={180}
               height={180}
-              className="drop-shadow-lg"
               priority
             />
           </div>
@@ -27,9 +26,9 @@ export default function Home() {
         </div>
 
         {/* Action Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 opacity-0 animate-fade-in stagger-1">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Link href="/capture" className="block group">
-            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10">
@@ -49,7 +48,7 @@ export default function Home() {
           </Link>
 
           <Link href="/ask" className="block group">
-            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10">
@@ -70,7 +69,7 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground opacity-0 animate-fade-in stagger-2">
+        <div className="text-center text-sm text-muted-foreground">
           <p>
             Powered by{" "}
             <span className="text-foreground">Johnny.Decimal</span> organization

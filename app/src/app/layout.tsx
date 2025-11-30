@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark theme">
       <body
-        className={`${roboto.variable} ${playfairDisplay.variable} ${firaCode.variable} font-sans antialiased bg-gradient-subtle min-h-screen`}
+        className={`${roboto.variable} ${playfairDisplay.variable} ${firaCode.variable} font-sans antialiased min-h-screen`}
       >
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
