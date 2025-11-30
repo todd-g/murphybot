@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# Pre-commit hook for syncing markdown notes to Convex
+#
+# Installation:
+#   1. Copy this file to .git/hooks/pre-commit
+#   2. Make it executable: chmod +x .git/hooks/pre-commit
+#
+# Or run the install script:
+#   ./scripts/install-hooks.sh
+
+set -e
+
+# Get the repo root
+REPO_ROOT=$(git rev-parse --show-toplevel)
+SCRIPTS_DIR="$REPO_ROOT/scripts"
+
+# Check if Convex URL is set
+if [ -z "$NEXT_PUBLIC_CONVEX_URL" ] && [ -z "$CONVEX_URL" ]; then
+    # Try to load from .env
+    if [ -f "$REPO_ROOT/app/.env" ]; then
+        export $(grep -v '^#' "$REPO_ROOT/app/.env" | xargs)
+    fi
+fi
+
+# Get staged .md files in second-brain (excluding inbox)
+STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^second-brain/[0-9]+-.*\.md$' || true)
+
+if [ -z "$STAGED_MD" ]; then
+    # No markdown files to sync
+    exit 0
+fi
+
+echo "Syncing staged markdown files to Convex..."
+
+# Check if Python and dependencies are available
+if ! command -v python3 &> /dev/null; then
+    echo "Warning: Python 3 not found, skipping Convex sync"
+    exit 0
+fi
+
+# Check for required packages
+if ! python3 -c "import frontmatter, httpx" 2>/dev/null; then
+    echo "Warning: Python dependencies not installed"
+    echo "Run: pip install -r scripts/requirements.txt"
+    echo "Skipping Convex sync..."
+    exit 0
+fi
+
+# Convert relative paths to absolute
+FILES=""
+for file in $STAGED_MD; do
+    FILES="$FILES $REPO_ROOT/$file"
+done
+
+# Run sync script
+cd "$REPO_ROOT"
+python3 "$SCRIPTS_DIR/sync_notes.py" $FILES
+
+echo "Convex sync complete!"
+
