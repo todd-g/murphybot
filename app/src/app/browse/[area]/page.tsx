@@ -87,32 +87,34 @@ export default function AreaPage() {
             </Card>
           ) : (
             notes.map((note) => (
-              <Card key={note._id} className="transition-all hover:border-primary/50">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-primary" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-muted-foreground">
-                          {note.jdId}
-                        </span>
-                        <CardTitle className="text-base truncate">
-                          {note.title}
-                        </CardTitle>
+              <Link key={note._id} href={`/note/${note.path}`} className="block">
+                <Card className="transition-all hover:border-primary/50 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {note.jdId}
+                          </span>
+                          <CardTitle className="text-base truncate">
+                            {note.title}
+                          </CardTitle>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {note.path}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {note.path}
-                      </p>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {note.content.replace(/^#.*\n/, "").replace(/\n/g, " ").slice(0, 200)}
-                    {note.content.length > 200 ? "..." : ""}
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {note.content.replace(/^#.*\n/, "").replace(/\n/g, " ").slice(0, 200)}
+                      {note.content.length > 200 ? "..." : ""}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))
           )}
         </div>
