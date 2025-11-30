@@ -54,3 +54,4 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 
+docs/access.md
