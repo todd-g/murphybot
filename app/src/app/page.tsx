@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Inbox, Sparkles } from "lucide-react";
+import { Inbox, Sparkles, FolderOpen } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="max-w-2xl w-full space-y-8">
+      <div className="max-w-3xl w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex flex-col items-center justify-center gap-2">
@@ -26,7 +26,7 @@ export default function Home() {
         </div>
 
         {/* Action Cards */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Link href="/capture" className="block group">
             <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
               <CardHeader>
@@ -39,7 +39,27 @@ export default function Home() {
                       Capture
                     </CardTitle>
                     <CardDescription>
-                      Quick capture text, images, or links
+                      Quick capture thoughts
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/browse" className="block group">
+            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <FolderOpen className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      Browse
+                    </CardTitle>
+                    <CardDescription>
+                      Explore your notes
                     </CardDescription>
                   </div>
                 </div>
@@ -56,24 +76,16 @@ export default function Home() {
                   </div>
                   <div>
                     <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      Ask My Brain
+                      Ask
                     </CardTitle>
                     <CardDescription>
-                      Query your knowledge with AI
+                      Query with AI
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
             </Card>
           </Link>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>
-            Powered by{" "}
-            <span className="text-foreground">Johnny.Decimal</span> organization
-          </p>
         </div>
       </div>
     </main>
