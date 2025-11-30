@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Send, Image as ImageIcon, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,7 +100,16 @@ export default function CapturePage() {
         {/* Capture form */}
         <Card className="opacity-0 animate-fade-in">
           <CardHeader>
-            <CardTitle className="text-2xl">Quick Capture</CardTitle>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="MurphyBot"
+                width={48}
+                height={48}
+                className="drop-shadow-md"
+              />
+              <CardTitle className="text-2xl">Quick Capture</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

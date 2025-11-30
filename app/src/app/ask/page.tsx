@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Send, Loader2, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,8 +71,14 @@ export default function AskPage() {
 
         {/* Header */}
         <div className="text-center space-y-2 opacity-0 animate-fade-in">
-          <div className="flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="MurphyBot"
+              width={48}
+              height={48}
+              className="drop-shadow-md"
+            />
             <h1 className="text-2xl font-bold">Ask My Brain</h1>
           </div>
           <p className="text-muted-foreground">

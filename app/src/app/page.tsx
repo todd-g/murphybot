@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Brain, Inbox, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Inbox, Sparkles } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
@@ -10,9 +11,15 @@ export default function Home() {
       <div className="max-w-2xl w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 opacity-0 animate-fade-in">
-          <div className="flex items-center justify-center gap-3">
-            <Brain className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold tracking-tight">MurphyBot</h1>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="MurphyBot"
+              width={180}
+              height={180}
+              className="drop-shadow-lg"
+              priority
+            />
           </div>
           <p className="text-muted-foreground text-lg">
             Your local-first, AI-assisted second brain
@@ -73,4 +80,3 @@ export default function Home() {
     </main>
   );
 }
-
