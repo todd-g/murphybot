@@ -30,13 +30,13 @@
     --chart-5: oklch(0.3796 0.1783 293.7446);
     --radius: 0.625rem;
     --sidebar: oklch(0.9691 0.0161 293.7558);
-    --sidebar-foreground: oklch(0.3588 0.1354 278.6973);
-    --sidebar-primary: oklch(0.6056 0.2189 292.7172);
-    --sidebar-primary-foreground: oklch(1.0000 0 0);
-    --sidebar-accent: oklch(0.9319 0.0316 255.5855);
-    --sidebar-accent-foreground: oklch(0.4244 0.1809 265.6377);
-    --sidebar-border: oklch(0.9299 0.0334 272.7879);
-    --sidebar-ring: oklch(0.6056 0.2189 292.7172);
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     --font-sans: Roboto, sans-serif;
     --font-serif: Playfair Display, serif;
     --font-mono: Fira Code, monospace;
@@ -57,6 +57,7 @@
     --shadow-xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.20), 2px 8px 10px -1px hsl(255 86% 66% / 0.20);
     --shadow-2xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.50);
     --tracking-normal: 0em;
+    --sidebar-background: 0 0% 98%;
   }
 
   .dark {
@@ -86,13 +87,13 @@
     --chart-5: oklch(0.4320 0.2106 292.7591);
     --radius: 0.625rem;
     --sidebar: oklch(0.2077 0.0398 265.7549);
-    --sidebar-foreground: oklch(0.9299 0.0334 272.7879);
-    --sidebar-primary: oklch(0.6056 0.2189 292.7172);
-    --sidebar-primary-foreground: oklch(1.0000 0 0);
-    --sidebar-accent: oklch(0.4568 0.2146 277.0229);
-    --sidebar-accent-foreground: oklch(0.9299 0.0334 272.7879);
-    --sidebar-border: oklch(0.2827 0.1351 291.0894);
-    --sidebar-ring: oklch(0.6056 0.2189 292.7172);
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     --font-sans: Roboto, sans-serif;
     --font-serif: Playfair Display, serif;
     --font-mono: Fira Code, monospace;
@@ -112,6 +113,7 @@
     --shadow-lg: 2px 2px 4px 0px hsl(255 86% 66% / 0.20), 2px 4px 6px -1px hsl(255 86% 66% / 0.20);
     --shadow-xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.20), 2px 8px 10px -1px hsl(255 86% 66% / 0.20);
     --shadow-2xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.50);
+    --sidebar-background: 240 5.9% 10%;
   }
 
   .theme {

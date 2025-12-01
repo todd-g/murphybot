@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Roboto, Playfair_Display, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/lib/convex";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 const roboto = Roboto({
   variable: "--font-sans",
@@ -34,7 +36,19 @@ export default function RootLayout({
       <body
         className={`${roboto.variable} ${playfairDisplay.variable} ${firaCode.variable} font-sans antialiased min-h-screen`}
       >
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        <ConvexClientProvider>
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+              </header>
+              <div className="flex-1 overflow-auto">
+                {children}
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

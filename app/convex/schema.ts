@@ -31,6 +31,18 @@ export default defineSchema({
       searchField: "content",
       filterFields: ["jdId"],
     }),
+
+  // Activity log - tracks AI auto-processing actions
+  activity_log: defineTable({
+    createdAt: v.number(),
+    action: v.string(), // "created" | "updated"
+    captureId: v.optional(v.id("capture_queue")),
+    noteId: v.id("notes"),
+    notePath: v.string(),
+    noteTitle: v.string(),
+    suggestedArea: v.string(), // e.g. "Ideas", "Media"
+    reasoning: v.string(), // AI's explanation
+  }).index("by_createdAt", ["createdAt"]),
 });
 
 

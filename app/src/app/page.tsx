@@ -1,136 +1,152 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { Inbox, Sparkles, FolderOpen, Search, Zap } from "lucide-react";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { FolderOpen, Zap, Search, Sparkles, Clock, FileText } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
+  const notes = useQuery(api.notes.getAll);
+  const pendingCaptures = useQuery(api.captures.getPending);
+  
+  const noteCount = notes?.length ?? 0;
+  const pendingCount = pendingCaptures?.length ?? 0;
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="max-w-3xl w-full space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex flex-col items-center justify-center gap-2">
-            <Image
-              src="/logo.png"
-              alt="MurphyBot"
-              width={180}
-              height={180}
-              priority
-            />
-          </div>
-          <p className="text-muted-foreground text-lg">
-            Your app-first, AI-assisted second brain
-          </p>
-        </div>
-
-        {/* Input Section */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Add Notes
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link href="/browse" className="block group">
-              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <FolderOpen className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        Browse & Edit
-                      </CardTitle>
-                      <CardDescription>
-                        Direct access to notes
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link href="/capture" className="block group">
-              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-accent/50">
-                      <Zap className="w-6 h-6 text-accent-foreground" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        Quick Capture
-                      </CardTitle>
-                      <CardDescription>
-                        Dump it, AI sorts it
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
+    <main className="p-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Welcome Header */}
+        <div className="flex items-center gap-4">
+          <Image
+            src="/logo.png"
+            alt="MurphyBot"
+            width={64}
+            height={64}
+            className="rounded-xl"
+          />
+          <div>
+            <h1 className="text-2xl font-bold">Welcome to MurphyBot</h1>
+            <p className="text-muted-foreground">
+              Your app-first, AI-assisted second brain
+            </p>
           </div>
         </div>
 
-        {/* Retrieval Section */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Find Notes
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link href="/search" className="block group">
-              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Search className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        Search
-                      </CardTitle>
-                      <CardDescription>
-                        Find by keyword
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
+        {/* Stats Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Total Notes</CardDescription>
+              <CardTitle className="text-3xl">{noteCount}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Link href="/browse" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <FolderOpen className="h-3 w-3" />
+                Browse all
+              </Link>
+            </CardContent>
+          </Card>
 
-            <Link href="/ask" className="block group">
-              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-accent/50">
-                      <Sparkles className="w-6 h-6 text-accent-foreground" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        Ask AI
-                      </CardTitle>
-                      <CardDescription>
-                        Natural language query
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Pending Captures</CardDescription>
+              <CardTitle className="text-3xl">{pendingCount}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {pendingCount > 0 ? (
+                <span className="text-sm text-muted-foreground">
+                  Auto-processing every 5 min
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  All caught up!
+                </span>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Quick Actions</CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-2">
+              <Link href="/capture" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <Zap className="h-3 w-3" />
+                Capture
+              </Link>
+              <span className="text-muted-foreground">·</span>
+              <Link href="/search" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <Search className="h-3 w-3" />
+                Search
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Inbox link */}
-        <div className="text-center">
-          <Link 
-            href="/inbox" 
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Inbox className="w-4 h-4" />
-            Process captured items
-          </Link>
+        {/* Quick Links */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card className="group hover:border-primary/50 transition-colors">
+            <Link href="/capture">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/50">
+                    <Zap className="h-5 w-5 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                      Quick Capture
+                    </CardTitle>
+                    <CardDescription>
+                      Dump it, AI sorts it automatically
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="group hover:border-primary/50 transition-colors">
+            <Link href="/ask">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/50">
+                    <Sparkles className="h-5 w-5 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                      Ask AI
+                    </CardTitle>
+                    <CardDescription>
+                      Natural language queries
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Link>
+          </Card>
         </div>
+
+        {/* Recent Activity Teaser */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Recent Activity</CardTitle>
+              </div>
+              <Link href="/activity" className="text-sm text-primary hover:underline">
+                View all
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              AI activity log will appear here as captures are automatically processed.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
