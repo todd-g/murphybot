@@ -110,7 +110,7 @@ Please let them know that there are no notes to search yet, and they should add 
     let responseText;
     try {
       const message = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-latest",
+        model: "claude-3-haiku-20240307",
         max_tokens: 1024,
         system: systemPrompt,
         messages: [
