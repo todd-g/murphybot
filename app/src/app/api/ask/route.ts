@@ -99,7 +99,7 @@ Please let them know that there are no notes to search yet, and they should add 
 
     // Call Claude API
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+      model: "claude-3-5-sonnet-latest",
       max_tokens: 1024,
       system: systemPrompt,
       messages: [
