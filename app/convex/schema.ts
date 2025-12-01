@@ -23,7 +23,7 @@ export default defineSchema({
     title: v.string(),
     content: v.string(), // Full markdown content
     updatedAt: v.number(),
-    version: v.number(), // Increment on each edit for sync conflict detection
+    version: v.optional(v.number()), // Increment on each edit for sync conflict detection
   })
     .index("by_jdId", ["jdId"])
     .index("by_path", ["path"])
