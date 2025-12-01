@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "30-people/30.00-people-index.md",
+                "file": "40-media/40.06-games.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "30.00-people-index"
+              "title": "40.06-games"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "30-people/30.00-people-index.md",
+                "file": "40-media/40.06-games.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for 30.00-people-index"
+              "title": "Backlinks for 40.06-games"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "30-people/30.00-people-index.md",
+                "file": "40-media/40.06-games.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 30.00-people-index"
+              "title": "Outgoing links from 40.06-games"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "30-people/30.00-people-index.md",
+                "file": "40-media/40.06-games.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 30.00-people-index"
+              "title": "Outline of 40.06-games"
             }
           }
         ]
@@ -185,10 +185,13 @@
   },
   "active": "2d644facc4bb82fa",
   "lastOpenFiles": [
+    "inbox/new/2025-11-30T19-02-02Z-cap_0004.md",
+    "40-media/40.03-movies-tv.md",
+    "40-media/40.00-media-index.md",
+    "40-media/40.06-games.md",
+    "30-people/30.00-people-index.md",
     "inbox/processed/2025-11-30T18-23-26Z-cap_0003.md",
     "inbox/processed/2025-11-30T17-49-33Z-cap_0002.md",
-    "40-media/40.06-games.md",
-    "40-media/40.03-movies-tv.md",
     "inbox/new/2025-11-30T18-23-26Z-cap_0003.md",
     "inbox/assets/cap_0003.jpg",
     "inbox/new/2025-11-30T17-49-33Z-cap_0002.md",
@@ -196,11 +199,9 @@
     "inbox/processed/2025-11-30T16-23-18Z-cap_0001.md",
     "_state.json",
     "inbox/new/2025-11-30T16-23-18Z-cap_0001.md",
-    "30-people/30.00-people-index.md",
     "90-archive/90.00-archive-index.md",
     "80-personal/80.00-personal-index.md",
     "60-ideas/60.00-ideas-index.md",
-    "40-media/40.00-media-index.md",
     "20-projects/20.00-projects-index.md",
     "10-reference/10.00-reference-index.md"
   ]
