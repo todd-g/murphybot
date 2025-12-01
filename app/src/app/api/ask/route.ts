@@ -25,6 +25,15 @@ const JD_AREAS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for API key
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error("ANTHROPIC_API_KEY is not set");
+      return NextResponse.json(
+        { error: "API key not configured" },
+        { status: 500 }
+      );
+    }
+
     const { question } = await request.json();
 
     if (!question || typeof question !== "string") {
@@ -113,8 +122,9 @@ Please let them know that there are no notes to search yet, and they should add 
     });
   } catch (error) {
     console.error("Error in /api/ask:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to process question" },
+      { error: `Failed to process question: ${errorMessage}` },
       { status: 500 }
     );
   }
