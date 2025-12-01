@@ -53,7 +53,7 @@ export const processNextCapture = internalAction({
     }
     
     const capture = captures[0];
-    console.log(`Processing capture: ${capture._id}`);
+    console.log(`Processing capture: ${capture._id} [v2 with debug]`);
     
     // Mark as processing
     await ctx.runMutation(internal.processingHelpers.updateCaptureStatus, {
@@ -285,7 +285,7 @@ Provide your JSON response.`,
       console.log(`System prompt preview (first 500 chars): ${systemPrompt.slice(0, 500)}`);
       
       const requestBody = {
-        model: "claude-3-5-sonnet-20241022", // Claude 3.5 Sonnet - best for vision
+        model: "claude-3-haiku-20240307", // Claude 3 Haiku - fast, supports vision
         max_tokens: 2048,
         system: systemPrompt,
         messages: [
@@ -322,14 +322,20 @@ Provide your JSON response.`,
         .join("\n");
 
       // Parse the JSON response
+      console.log(`Claude raw response: ${responseText.slice(0, 500)}`);
+      
       let suggestion: AISuggestion;
       try {
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
+          console.error(`No JSON found in response. Full text: ${responseText}`);
           throw new Error("No JSON found in response");
         }
+        console.log(`Parsed JSON match: ${jsonMatch[0].slice(0, 300)}`);
         const parsed = JSON.parse(jsonMatch[0]);
-        const areaInfo = JD_AREAS.find((a) => a.prefix === parsed.area) || JD_AREAS[6];
+        // Extract the first digit from area (Claude returns "80" but we need "8")
+        const areaPrefix = String(parsed.area).charAt(0);
+        const areaInfo = JD_AREAS.find((a) => a.prefix === areaPrefix) || JD_AREAS[6];
         
         suggestion = {
           action: parsed.action === "append" ? "append" : "create",
