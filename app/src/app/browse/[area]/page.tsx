@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, FileText, Plus, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,25 +94,17 @@ export default function AreaPage() {
         </Link>
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Image
-              src="/logo.png"
-              alt="MurphyBot"
-              width={48}
-              height={48}
-            />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
-                  {area.range}
-                </span>
-                <h1 className="text-2xl font-bold">{area.name}</h1>
-              </div>
-              <p className="text-muted-foreground">{area.description}</p>
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+                {area.range}
+              </span>
+              <h1 className="text-2xl font-bold">{area.name}</h1>
             </div>
+            <p className="text-muted-foreground">{area.description}</p>
           </div>
-          <Button onClick={() => setShowNewNote(true)} className="gap-2">
+          <Button onClick={() => setShowNewNote(true)} className="gap-2 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             New Note
           </Button>
@@ -208,17 +199,15 @@ export default function AreaPage() {
               <Link key={note._id} href={`/note/${note.path}`} className="block">
                 <Card className="transition-all hover:border-primary/50 hover:shadow-lg cursor-pointer">
                   <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-primary" />
+                    <div className="flex items-start gap-3">
+                      <FileText className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {note.jdId}
-                          </span>
-                          <CardTitle className="text-base truncate">
-                            {note.title}
-                          </CardTitle>
-                        </div>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {note.jdId}
+                        </span>
+                        <CardTitle className="text-base">
+                          {note.title}
+                        </CardTitle>
                         <p className="text-xs text-muted-foreground truncate">
                           {note.path}
                         </p>

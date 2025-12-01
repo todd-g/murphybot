@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, FileText, Calendar, ChevronLeft, ChevronRight, Pencil, X, Save, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -134,46 +133,46 @@ export default function NotePage() {
         </Link>
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <Image
-              src="/logo.png"
-              alt="MurphyBot"
-              width={48}
-              height={48}
-              className="mt-1"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
-                  {note.jdId}
-                </span>
-                <FileText className="w-4 h-4 text-primary" />
-              </div>
-              {isEditing ? (
-                <Input
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="text-2xl font-bold h-auto py-1"
-                />
-              ) : (
-                <h1 className="text-2xl font-bold">{note.title}</h1>
-              )}
-              <p className="text-sm text-muted-foreground mt-1">{note.path}</p>
-              {note.updatedAt && (
-                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  Updated {new Date(note.updatedAt).toLocaleDateString()}
-                  {note.version && <span className="ml-2">· v{note.version}</span>}
-                </p>
-              )}
+        <div className="space-y-4">
+          {/* Title and metadata */}
+          <div>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+                {note.jdId}
+              </span>
+              <FileText className="w-4 h-4 text-primary" />
             </div>
+            {isEditing ? (
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="text-2xl font-bold h-auto py-1"
+              />
+            ) : (
+              <h1 className="text-2xl font-bold">{note.title}</h1>
+            )}
+            <p className="text-sm text-muted-foreground mt-1 break-all">{note.path}</p>
+            {note.updatedAt && (
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Updated {new Date(note.updatedAt).toLocaleDateString()}
+                {note.version && <span className="ml-2">· v{note.version}</span>}
+              </p>
+            )}
           </div>
           
-          {/* Edit/Save buttons */}
-          <div className="flex items-center gap-2">
+          {/* Edit/Save buttons - stacked on mobile */}
+          <div className="flex flex-wrap items-center gap-2">
             {isEditing ? (
               <>
+                <Button size="sm" onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
+                  <Save className="w-4 h-4 mr-1" />
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCancel} className="flex-1 sm:flex-none">
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -181,14 +180,6 @@ export default function NotePage() {
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleCancel}>
-                  <X className="w-4 h-4 mr-1" />
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                  <Save className="w-4 h-4 mr-1" />
-                  {isSaving ? "Saving..." : "Save"}
                 </Button>
               </>
             ) : (
@@ -203,25 +194,25 @@ export default function NotePage() {
         {/* Delete Confirmation */}
         {showDeleteConfirm && (
           <Card className="border-destructive bg-destructive/5">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm">Are you sure you want to delete this note?</p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowDeleteConfirm(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </Button>
-                </div>
+            <CardContent className="py-4 space-y-3">
+              <p className="text-sm">Are you sure you want to delete this note?</p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="w-full sm:w-auto"
+                >
+                  Delete
+                </Button>
               </div>
             </CardContent>
           </Card>
