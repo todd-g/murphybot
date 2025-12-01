@@ -208,8 +208,24 @@ ${imageAdded ? "Remember: Analyze the IMAGE above and describe what you see in t
 Provide your JSON response.`,
       });
 
-      // Call Claude API - using Sonnet for better vision + large context handling
+      // Call Claude API - using Sonnet 3.5 for vision + large context
       console.log(`Sending to Claude with ${messageContent.length} content blocks, imageAdded=${imageAdded}`);
+      console.log(`Message content types: ${messageContent.map(c => c.type).join(", ")}`);
+      
+      const requestBody = {
+        model: "claude-3-5-sonnet-20241022", // Claude 3.5 Sonnet - best for vision
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: messageContent,
+          },
+        ],
+      };
+      
+      console.log(`Request body (without image data): model=${requestBody.model}, max_tokens=${requestBody.max_tokens}`);
+      
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -217,25 +233,17 @@ Provide your JSON response.`,
           "x-api-key": apiKey,
           "anthropic-version": "2023-06-01",
         },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", // Sonnet for better vision + context
-          max_tokens: 2048,
-          system: systemPrompt,
-          messages: [
-            {
-              role: "user",
-              content: messageContent,
-            },
-          ],
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         const errorData = await response.text();
+        console.error(`Claude API error response: ${errorData}`);
         throw new Error(`Claude API error: ${response.status} ${errorData}`);
       }
 
       const data = await response.json();
+      console.log(`Claude response received, content blocks: ${data.content?.length}`);
       const responseText = data.content
         .filter((block: { type: string }) => block.type === "text")
         .map((block: { text: string }) => block.text)

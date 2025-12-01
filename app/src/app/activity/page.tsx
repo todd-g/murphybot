@@ -83,11 +83,33 @@ export default function ActivityPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                         <span className="capitalize">{capture.source}</span>
                         <span>·</span>
+                        <span>{capture.contentType}</span>
+                        <span>·</span>
                         <span>{formatTimeAgo(capture.createdAt)}</span>
                       </div>
-                      <p className="text-sm line-clamp-2">
-                        {capture.text || "[Image/file capture]"}
-                      </p>
+                      {capture.text && (
+                        <p className="text-sm line-clamp-2 mb-2">
+                          {capture.text}
+                        </p>
+                      )}
+                      {/* Show image preview if available */}
+                      {capture.fileUrl && (
+                        <div className="mt-2">
+                          <img 
+                            src={capture.fileUrl} 
+                            alt="Captured image" 
+                            className="max-h-40 rounded border border-border"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Image URL: {capture.fileUrl.slice(0, 50)}...
+                          </p>
+                        </div>
+                      )}
+                      {!capture.text && !capture.fileUrl && (
+                        <p className="text-sm text-muted-foreground">
+                          [No content]
+                        </p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
