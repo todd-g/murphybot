@@ -28,3 +28,4 @@ echo "  NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud"
 echo ""
 echo "Done!"
 
+

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Inbox, Sparkles, FolderOpen } from "lucide-react";
+import { Inbox, Sparkles, FolderOpen, Search, Zap } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
@@ -21,70 +21,114 @@ export default function Home() {
             />
           </div>
           <p className="text-muted-foreground text-lg">
-            Your local-first, AI-assisted second brain
+            Your app-first, AI-assisted second brain
           </p>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Link href="/capture" className="block group">
-            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Inbox className="w-6 h-6 text-primary" />
+        {/* Input Section */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Add Notes
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link href="/browse" className="block group">
+              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <FolderOpen className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        Browse & Edit
+                      </CardTitle>
+                      <CardDescription>
+                        Direct access to notes
+                      </CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      Capture
-                    </CardTitle>
-                    <CardDescription>
-                      Quick capture thoughts
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </Link>
+                </CardHeader>
+              </Card>
+            </Link>
 
-          <Link href="/browse" className="block group">
-            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <FolderOpen className="w-6 h-6 text-primary" />
+            <Link href="/capture" className="block group">
+              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-accent/50">
+                      <Zap className="w-6 h-6 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        Quick Capture
+                      </CardTitle>
+                      <CardDescription>
+                        Dump it, AI sorts it
+                      </CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      Browse
-                    </CardTitle>
-                    <CardDescription>
-                      Explore your notes
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </Link>
+                </CardHeader>
+              </Card>
+            </Link>
+          </div>
+        </div>
 
-          <Link href="/ask" className="block group">
-            <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Sparkles className="w-6 h-6 text-primary" />
+        {/* Retrieval Section */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Find Notes
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link href="/search" className="block group">
+              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Search className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        Search
+                      </CardTitle>
+                      <CardDescription>
+                        Find by keyword
+                      </CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      Ask
-                    </CardTitle>
-                    <CardDescription>
-                      Query with AI
-                    </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+
+            <Link href="/ask" className="block group">
+              <Card className="h-full transition-all hover:border-primary/50 hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-accent/50">
+                      <Sparkles className="w-6 h-6 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        Ask AI
+                      </CardTitle>
+                      <CardDescription>
+                        Natural language query
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-            </Card>
+                </CardHeader>
+              </Card>
+            </Link>
+          </div>
+        </div>
+
+        {/* Inbox link */}
+        <div className="text-center">
+          <Link 
+            href="/inbox" 
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Inbox className="w-4 h-4" />
+            Process captured items
           </Link>
         </div>
       </div>

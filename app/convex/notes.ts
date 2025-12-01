@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Upsert a note (used by MD → Convex sync script)
-export const upsert = mutation({
+// Create a new note directly in the app
+export const create = mutation({
   args: {
     jdId: v.string(),
     path: v.string(),
@@ -17,24 +17,108 @@ export const upsert = mutation({
       .first();
 
     if (existing) {
-      // Update existing note
+      throw new Error(`Note already exists at path: ${args.path}`);
+    }
+
+    const id = await ctx.db.insert("notes", {
+      jdId: args.jdId,
+      path: args.path,
+      title: args.title,
+      content: args.content,
+      updatedAt: Date.now(),
+      version: 1,
+    });
+    return { id, version: 1 };
+  },
+});
+
+// Update an existing note (increments version)
+export const update = mutation({
+  args: {
+    id: v.id("notes"),
+    title: v.optional(v.string()),
+    content: v.optional(v.string()),
+    jdId: v.optional(v.string()),
+    path: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args.id);
+    if (!existing) {
+      throw new Error("Note not found");
+    }
+
+    const newVersion = (existing.version ?? 0) + 1;
+    const updates: Record<string, unknown> = {
+      updatedAt: Date.now(),
+      version: newVersion,
+    };
+
+    if (args.title !== undefined) updates.title = args.title;
+    if (args.content !== undefined) updates.content = args.content;
+    if (args.jdId !== undefined) updates.jdId = args.jdId;
+    if (args.path !== undefined) updates.path = args.path;
+
+    await ctx.db.patch(args.id, updates);
+    return { id: args.id, version: newVersion };
+  },
+});
+
+// Delete a note by ID
+export const remove = mutation({
+  args: {
+    id: v.id("notes"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+    return { deleted: true };
+  },
+});
+
+// Upsert a note (used by sync scripts - handles version tracking)
+export const upsert = mutation({
+  args: {
+    jdId: v.string(),
+    path: v.string(),
+    title: v.string(),
+    content: v.string(),
+    expectedVersion: v.optional(v.number()), // For conflict detection
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("notes")
+      .withIndex("by_path", (q) => q.eq("path", args.path))
+      .first();
+
+    if (existing) {
+      // Check for conflicts if expectedVersion provided
+      if (args.expectedVersion !== undefined && existing.version !== args.expectedVersion) {
+        return {
+          action: "conflict",
+          id: existing._id,
+          currentVersion: existing.version,
+          expectedVersion: args.expectedVersion,
+        };
+      }
+
+      const newVersion = (existing.version ?? 0) + 1;
       await ctx.db.patch(existing._id, {
         jdId: args.jdId,
         title: args.title,
         content: args.content,
         updatedAt: Date.now(),
+        version: newVersion,
       });
-      return { action: "updated", id: existing._id };
+      return { action: "updated", id: existing._id, version: newVersion };
     } else {
-      // Create new note
       const id = await ctx.db.insert("notes", {
         jdId: args.jdId,
         path: args.path,
         title: args.title,
         content: args.content,
         updatedAt: Date.now(),
+        version: 1,
       });
-      return { action: "created", id };
+      return { action: "created", id, version: 1 };
     }
   },
 });
@@ -55,6 +139,23 @@ export const deleteByPath = mutation({
       return { deleted: true };
     }
     return { deleted: false };
+  },
+});
+
+// Get all notes with version info (for sync scripts)
+export const getForSync = query({
+  args: {},
+  handler: async (ctx) => {
+    const notes = await ctx.db.query("notes").collect();
+    return notes.map((note) => ({
+      _id: note._id,
+      path: note.path,
+      jdId: note.jdId,
+      title: note.title,
+      content: note.content,
+      updatedAt: note.updatedAt,
+      version: note.version ?? 1,
+    }));
   },
 });
 
@@ -113,4 +214,5 @@ export const getByPath = query({
       .first();
   },
 });
+
 
