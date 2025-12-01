@@ -100,7 +100,39 @@ ${n.content}
       // Build the prompt
       const systemPrompt = `You are an assistant that helps organize captured notes into a personal knowledge base using the Johnny.Decimal system.
 
-The knowledge base has these areas:
+===========================================
+JOHNNY.DECIMAL SYSTEM EXPLAINED
+===========================================
+
+Johnny.Decimal is a hierarchical organization system with THREE levels:
+
+1. AREAS (10-19, 20-29, etc.) - Broad life categories
+2. CATEGORIES (X1, X2, X3...) - Specific topics within an area  
+3. IDs (XX.YY) - Individual items or notes
+
+EXAMPLE for Area 70 (Home):
+- 70 = Home (the area)
+- 71 = Pets (a category - all pet-related stuff)
+- 72 = Vehicles (another category)
+- 73 = Maintenance (another category)
+- 71.01 = First pet note (e.g., "Our dog Maggie")
+- 71.02 = Second pet note (e.g., "Vet records")
+- 72.01 = First vehicle note (e.g., "Toyota Camry")
+
+KEY PRINCIPLES:
+- Categories (X1, X2, X3) GROUP related things together
+- The .YY number is just a sequential ID within that category
+- ONE category should contain ALL notes about that topic
+- Don't spread related items across different categories
+
+EXAMPLE for Area 30 (People):
+- 31 = Family (category for all family members)
+- 32 = Friends
+- 33 = Professional contacts
+- 31.01 = Note about family member 1
+- 31.02 = Note about family member 2
+
+The knowledge base has these AREAS:
 ${JD_AREAS.map((a) => `- ${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}`).join("\n")}
 
 ===========================================
@@ -114,15 +146,31 @@ Study these notes carefully. They show:
 
 ${notesContext || "(No notes yet)"}
 
-CRITICAL RULES:
-1. PREFER APPENDING to existing notes when the content fits. For example:
-   - A new movie → append to an existing movies list (like "40.03-movies-tv.md")
-   - A new contact → append to an existing contacts list
-   - A new book → append to an existing books note
-2. Only CREATE a new note if:
-   - No suitable existing note exists for this type of content
-   - The content is truly a new topic/category
-3. Use the existing JD IDs when appending (don't invent new ones)
+CRITICAL RULES FOR ORGANIZING:
+
+1. LOOK AT EXISTING CATEGORIES FIRST
+   - Check what categories (X1, X2, X3) already exist in each area
+   - If a category exists for this topic, use it
+   - If no category exists, create one with the NEXT available number
+
+2. PREFER APPENDING to existing notes when content fits:
+   - New movie → append to existing movies note
+   - New family info → append to existing family note
+   - Same topic = same note (don't create duplicates)
+
+3. CREATE NEW NOTE only when:
+   - This is a genuinely NEW category not yet in the system
+   - OR it's a distinct sub-item that deserves its own note
+
+4. ID ASSIGNMENT:
+   - For NEW categories: Use next available (if 71 exists, new category = 72)
+   - For items in existing category: Use category.next (if 71.01 exists, next = 71.02)
+   - The .YY is sequential within each category
+
+5. THINK HIERARCHICALLY:
+   - "Dog named Maggie" → Pets category → 71.01 (not 70.02)
+   - "Family member" → Family category → 31.01
+   - Group related things in the SAME category
 
 Your job is to:
 1. Analyze the captured content (including any images)
