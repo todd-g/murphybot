@@ -119,19 +119,23 @@ Respond with JSON in this exact format:
       const messageContent: Array<{ type: string; text?: string; source?: { type: string; media_type: string; data: string } }> = [];
 
       // If there's an image, fetch it and add as base64
+      let imageAdded = false;
       if (hasImage && capture.fileUrl) {
         try {
           console.log(`Fetching image: ${capture.fileUrl}`);
           const imageResponse = await fetch(capture.fileUrl);
+          
           if (imageResponse.ok) {
             const imageBuffer = await imageResponse.arrayBuffer();
             const base64Image = Buffer.from(imageBuffer).toString("base64");
             
-            // Detect media type from URL or default to jpeg
+            // Get media type from Content-Type header, fallback to jpeg
+            const contentType = imageResponse.headers.get("content-type");
             let mediaType = "image/jpeg";
-            if (capture.fileUrl.includes(".png")) mediaType = "image/png";
-            else if (capture.fileUrl.includes(".gif")) mediaType = "image/gif";
-            else if (capture.fileUrl.includes(".webp")) mediaType = "image/webp";
+            if (contentType?.includes("png")) mediaType = "image/png";
+            else if (contentType?.includes("gif")) mediaType = "image/gif";
+            else if (contentType?.includes("webp")) mediaType = "image/webp";
+            else if (contentType?.includes("jpeg") || contentType?.includes("jpg")) mediaType = "image/jpeg";
             
             messageContent.push({
               type: "image",
@@ -141,7 +145,10 @@ Respond with JSON in this exact format:
                 data: base64Image,
               },
             });
-            console.log(`Added image to message (${mediaType}, ${base64Image.length} chars)`);
+            imageAdded = true;
+            console.log(`Added image to message (${mediaType}, ${base64Image.length} chars base64)`);
+          } else {
+            console.error(`Failed to fetch image: ${imageResponse.status} ${imageResponse.statusText}`);
           }
         } catch (imageError) {
           console.error("Failed to fetch image:", imageError);
@@ -155,12 +162,15 @@ Respond with JSON in this exact format:
 
 Source: ${capture.source}
 Content Type: ${capture.contentType}
-${hasImage ? "An image is attached above - please analyze it along with any text." : ""}
+${imageAdded ? "IMPORTANT: An image is attached above. Please LOOK AT THE IMAGE and describe what you see. Base your categorization on the image content!" : ""}
+${hasImage && !imageAdded ? "(Note: There was an image but it could not be loaded)" : ""}
 
 Text content:
 ${captureContent}
 
-Analyze this and provide your JSON response.`,
+${imageAdded ? "Remember: Analyze the IMAGE above and describe what you see in the content field!" : ""}
+
+Provide your JSON response.`,
       });
 
       // Call Claude API with vision-capable model
