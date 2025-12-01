@@ -5,11 +5,27 @@ import { internalQuery, internalMutation } from "./_generated/server";
 export const getOldestPending = internalQuery({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db
+    const captures = await ctx.db
       .query("capture_queue")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .order("asc")
       .take(1);
+    
+    // Resolve fileStorageId to actual URL
+    const capturesWithUrls = await Promise.all(
+      captures.map(async (capture) => {
+        let fileUrl: string | null = null;
+        if (capture.fileStorageId) {
+          fileUrl = await ctx.storage.getUrl(capture.fileStorageId);
+        }
+        return {
+          ...capture,
+          fileUrl,
+        };
+      })
+    );
+    
+    return capturesWithUrls;
   },
 });
 
