@@ -3,7 +3,6 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, FileText, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -43,19 +42,11 @@ export default function BrowsePage() {
         </Link>
 
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Image
-            src="/logo.png"
-            alt="MurphyBot"
-            width={48}
-            height={48}
-          />
-          <div>
-            <h1 className="text-2xl font-bold">Browse Notes</h1>
-            <p className="text-muted-foreground">
-              Explore your knowledge by category
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">Browse Notes</h1>
+          <p className="text-muted-foreground">
+            Explore your knowledge by category
+          </p>
         </div>
 
         {/* Areas Grid */}

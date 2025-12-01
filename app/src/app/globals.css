@@ -113,7 +113,7 @@
     --shadow-lg: 2px 2px 4px 0px hsl(255 86% 66% / 0.20), 2px 4px 6px -1px hsl(255 86% 66% / 0.20);
     --shadow-xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.20), 2px 8px 10px -1px hsl(255 86% 66% / 0.20);
     --shadow-2xl: 2px 2px 4px 0px hsl(255 86% 66% / 0.50);
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 279 28% 14%;
   }
 
   .theme {
