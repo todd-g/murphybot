@@ -7,62 +7,21 @@ import {
   FolderOpen,
   Search,
   Clock,
+  Sparkles,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar"
-
-const data = {
-  navMain: [
-    {
-      title: "Manage",
-      url: "/browse",
-      icon: FolderOpen,
-      isActive: true,
-      items: [
-        {
-          title: "Browse & Edit",
-          url: "/browse",
-        },
-        {
-          title: "Quick Capture",
-          url: "/capture",
-        },
-      ],
-    },
-    {
-      title: "Find",
-      url: "/search",
-      icon: Search,
-      items: [
-        {
-          title: "Search",
-          url: "/search",
-        },
-        {
-          title: "Ask AI",
-          url: "/ask",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Activity",
-      url: "/activity",
-      icon: Clock,
-    },
-  ],
-}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpenMobile } = useSidebar()
@@ -96,8 +55,64 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <SidebarGroup>
+          <SidebarGroupLabel>Manage</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/browse" onClick={handleClick}>
+                  <FolderOpen className="size-4" />
+                  <span>Browse</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/capture" onClick={handleClick}>
+                  <Sparkles className="size-4" />
+                  <span>Capture</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Find</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/search" onClick={handleClick}>
+                  <Search className="size-4" />
+                  <span>Search</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/ask" onClick={handleClick}>
+                  <Sparkles className="size-4" />
+                  <span>Ask</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup className="mt-auto">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/activity" onClick={handleClick}>
+                  <Clock className="size-4" />
+                  <span>Activity</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   )

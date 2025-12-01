@@ -73,36 +73,74 @@ The knowledge base has these areas:
 ${JD_AREAS.map((a) => `- ${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}`).join("\n")}
 
 Your job is to:
-1. Analyze the captured content
+1. Analyze the captured content (including any images)
 2. Suggest the best area and category
 3. Generate a proper JD ID (e.g., 40.03 for Media category 03)
 4. Create a clean title
 5. Format the content as proper markdown
+6. If there's an image, include a description of what's in the image in the note content
 
 Respond with JSON in this exact format:
 {
   "area": "4",
   "jdId": "40.03",
   "title": "Short descriptive title",
-  "content": "# Title\\n\\nFormatted markdown content...",
+  "content": "# Title\\n\\nFormatted markdown content... (if image: describe what's in it)",
   "reasoning": "Brief explanation of why this category was chosen"
 }`;
 
       const captureContent = capture.text || "[No text content]";
       const hasImage = !!capture.fileUrl;
 
-      const userMessage = `Please process this captured content and suggest where it should go:
+      // Build message content - can be multimodal with images
+      const messageContent: Array<{ type: string; text?: string; source?: { type: string; media_type: string; data: string } }> = [];
+
+      // If there's an image, fetch it and add as base64
+      if (hasImage && capture.fileUrl) {
+        try {
+          console.log(`Fetching image: ${capture.fileUrl}`);
+          const imageResponse = await fetch(capture.fileUrl);
+          if (imageResponse.ok) {
+            const imageBuffer = await imageResponse.arrayBuffer();
+            const base64Image = Buffer.from(imageBuffer).toString("base64");
+            
+            // Detect media type from URL or default to jpeg
+            let mediaType = "image/jpeg";
+            if (capture.fileUrl.includes(".png")) mediaType = "image/png";
+            else if (capture.fileUrl.includes(".gif")) mediaType = "image/gif";
+            else if (capture.fileUrl.includes(".webp")) mediaType = "image/webp";
+            
+            messageContent.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mediaType,
+                data: base64Image,
+              },
+            });
+            console.log(`Added image to message (${mediaType}, ${base64Image.length} chars)`);
+          }
+        } catch (imageError) {
+          console.error("Failed to fetch image:", imageError);
+        }
+      }
+
+      // Add the text content
+      messageContent.push({
+        type: "text",
+        text: `Please process this captured content and suggest where it should go:
 
 Source: ${capture.source}
 Content Type: ${capture.contentType}
-${hasImage ? `Has attached image: ${capture.fileUrl}` : ""}
+${hasImage ? "An image is attached above - please analyze it along with any text." : ""}
 
-Content:
+Text content:
 ${captureContent}
 
-Analyze this and provide your JSON response.`;
+Analyze this and provide your JSON response.`,
+      });
 
-      // Call Claude API
+      // Call Claude API with vision-capable model
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -111,13 +149,13 @@ Analyze this and provide your JSON response.`;
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
+          model: "claude-3-haiku-20240307", // Haiku supports vision
           max_tokens: 1024,
           system: systemPrompt,
           messages: [
             {
               role: "user",
-              content: userMessage,
+              content: messageContent,
             },
           ],
         }),
