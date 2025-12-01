@@ -29,6 +29,8 @@ const JD_AREAS = [
 ];
 
 interface AISuggestion {
+  action: "create" | "append";
+  existingNoteId?: string;
   area: string;
   areaName: string;
   folder: string;
@@ -66,27 +68,48 @@ export const processNextCapture = internalAction({
         throw new Error("ANTHROPIC_API_KEY not configured in Convex dashboard");
       }
       
+      // Fetch existing notes for context
+      const existingNotes = await ctx.runQuery(internal.processingHelpers.getAllNotes);
+      
+      // Build notes summary for AI context
+      const notesSummary = existingNotes.map(n => 
+        `- [${n._id}] ${n.jdId}: "${n.title}" (${n.path})`
+      ).join("\n");
+      
       // Build the prompt
       const systemPrompt = `You are an assistant that helps organize captured notes into a personal knowledge base using the Johnny.Decimal system.
 
 The knowledge base has these areas:
 ${JD_AREAS.map((a) => `- ${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}`).join("\n")}
 
+EXISTING NOTES IN THE SYSTEM:
+${notesSummary || "(No notes yet)"}
+
+CRITICAL RULES:
+1. PREFER APPENDING to existing notes when the content fits. For example:
+   - A new movie → append to an existing movies list (like "40.03-movies-tv.md")
+   - A new contact → append to an existing contacts list
+   - A new book → append to an existing books note
+2. Only CREATE a new note if:
+   - No suitable existing note exists for this type of content
+   - The content is truly a new topic/category
+3. Use the existing JD IDs when appending (don't invent new ones)
+
 Your job is to:
 1. Analyze the captured content (including any images)
-2. Suggest the best area and category
-3. Generate a proper JD ID (e.g., 40.03 for Media category 03)
-4. Create a clean title
-5. Format the content as proper markdown
-6. If there's an image, include a description of what's in the image in the note content
+2. Check if it belongs in an EXISTING note (append) or needs a NEW note (create)
+3. Format the content as proper markdown
+4. If there's an image, include a description of what's in the image
 
 Respond with JSON in this exact format:
 {
+  "action": "append" or "create",
+  "existingNoteId": "ID from the list above (only if action is append)",
   "area": "4",
   "jdId": "40.03",
-  "title": "Short descriptive title",
-  "content": "# Title\\n\\nFormatted markdown content... (if image: describe what's in it)",
-  "reasoning": "Brief explanation of why this category was chosen"
+  "title": "For new notes: the title. For append: the section header to add",
+  "content": "The markdown content to add (for append: just the new section, for create: full note)",
+  "reasoning": "Why you chose to append/create and to this location"
 }`;
 
       const captureContent = capture.text || "[No text content]";
@@ -183,6 +206,8 @@ Analyze this and provide your JSON response.`,
         const areaInfo = JD_AREAS.find((a) => a.prefix === parsed.area) || JD_AREAS[6];
         
         suggestion = {
+          action: parsed.action === "append" ? "append" : "create",
+          existingNoteId: parsed.existingNoteId,
           area: parsed.area || "6",
           areaName: areaInfo.name,
           folder: areaInfo.folder,
@@ -192,8 +217,9 @@ Analyze this and provide your JSON response.`,
           reasoning: parsed.reasoning || "AI suggestion",
         };
       } catch (parseError) {
-        // Fallback to Ideas
+        // Fallback to Ideas - create new
         suggestion = {
+          action: "create",
           area: "6",
           areaName: "Ideas",
           folder: "60-ideas",
@@ -204,27 +230,61 @@ Analyze this and provide your JSON response.`,
         };
       }
 
-      // Create the note
-      const slug = suggestion.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      const path = `${suggestion.folder}/${suggestion.jdId}-${slug}.md`;
+      let noteResult: { id: Id<"notes">; action: string; path?: string; title?: string };
+      let finalPath: string;
+      let finalTitle: string;
 
-      const noteResult: { id: Id<"notes">; action: string } = await ctx.runMutation(internal.processingHelpers.createNoteInternal, {
-        jdId: suggestion.jdId,
-        path,
-        title: suggestion.title,
-        content: suggestion.content,
-      });
+      if (suggestion.action === "append" && suggestion.existingNoteId) {
+        // Append to existing note
+        try {
+          noteResult = await ctx.runMutation(internal.processingHelpers.appendToNote, {
+            noteId: suggestion.existingNoteId as Id<"notes">,
+            appendContent: suggestion.content,
+          });
+          finalPath = noteResult.path || suggestion.existingNoteId;
+          finalTitle = noteResult.title || suggestion.title;
+        } catch (appendError) {
+          console.error("Failed to append, falling back to create:", appendError);
+          // Fall back to create if append fails
+          suggestion.action = "create";
+          const slug = suggestion.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+          finalPath = `${suggestion.folder}/${suggestion.jdId}-${slug}.md`;
+          
+          noteResult = await ctx.runMutation(internal.processingHelpers.createNoteInternal, {
+            jdId: suggestion.jdId,
+            path: finalPath,
+            title: suggestion.title,
+            content: suggestion.content,
+          });
+          finalTitle = suggestion.title;
+        }
+      } else {
+        // Create new note
+        const slug = suggestion.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        finalPath = `${suggestion.folder}/${suggestion.jdId}-${slug}.md`;
+        finalTitle = suggestion.title;
+
+        noteResult = await ctx.runMutation(internal.processingHelpers.createNoteInternal, {
+          jdId: suggestion.jdId,
+          path: finalPath,
+          title: finalTitle,
+          content: suggestion.content,
+        });
+      }
 
       // Log the activity
       await ctx.runMutation(internal.processingHelpers.logActivity, {
-        action: "created",
+        action: suggestion.action === "append" ? "appended" : "created",
         captureId: capture._id,
         noteId: noteResult.id,
-        notePath: path,
-        noteTitle: suggestion.title,
+        notePath: finalPath,
+        noteTitle: finalTitle,
         suggestedArea: suggestion.areaName,
         reasoning: suggestion.reasoning,
       });
@@ -235,12 +295,12 @@ Analyze this and provide your JSON response.`,
         status: "done",
       });
 
-      console.log(`Successfully processed capture ${capture._id} -> ${path}`);
+      console.log(`Successfully processed capture ${capture._id} -> ${finalPath} (${suggestion.action})`);
       return {
         processed: true,
         noteId: noteResult.id,
-        path,
-        title: suggestion.title,
+        path: finalPath,
+        title: finalTitle,
         area: suggestion.areaName,
       };
       

@@ -13,6 +13,14 @@ export const getOldestPending = internalQuery({
   },
 });
 
+// Internal query to get all notes (for AI context)
+export const getAllNotes = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("notes").collect();
+  },
+});
+
 // Internal mutation to update capture status
 export const updateCaptureStatus = internalMutation({
   args: {
@@ -63,6 +71,28 @@ export const createNoteInternal = internalMutation({
       version: 1,
     });
     return { id, action: "created" };
+  },
+});
+
+// Internal mutation to append to existing note
+export const appendToNote = internalMutation({
+  args: {
+    noteId: v.id("notes"),
+    appendContent: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const note = await ctx.db.get(args.noteId);
+    if (!note) throw new Error("Note not found");
+
+    const newContent = note.content + "\n\n" + args.appendContent;
+    
+    await ctx.db.patch(args.noteId, {
+      content: newContent,
+      updatedAt: Date.now(),
+      version: (note.version ?? 0) + 1,
+    });
+    
+    return { id: args.noteId, action: "appended", path: note.path, title: note.title };
   },
 });
 
