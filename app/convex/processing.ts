@@ -71,8 +71,16 @@ export const processNextCapture = internalAction({
       // Fetch existing notes for context
       const existingNotes = await ctx.runQuery(internal.processingHelpers.getAllNotes);
       
+      console.log("=== NOTES CONTEXT DEBUG ===");
+      console.log(`Fetched ${existingNotes.length} notes from database`);
+      
       // Sort notes by JD ID to show proper organization
       const sortedNotes = [...existingNotes].sort((a, b) => a.jdId.localeCompare(b.jdId));
+      
+      // Log each note title
+      sortedNotes.forEach(n => {
+        console.log(`  - ${n.jdId}: ${n.title} (${n.content.length} chars)`);
+      });
       
       // Build FULL notes context - include complete content so AI understands:
       // 1. The actual facts/information stored
@@ -86,6 +94,8 @@ Title: ${n.title}
 ${n.content}
 === END NOTE ===`;
       }).join("\n\n");
+      
+      console.log(`Total notes context length: ${notesContext.length} chars`);
       
       // Build the prompt
       const systemPrompt = `You are an assistant that helps organize captured notes into a personal knowledge base using the Johnny.Decimal system.
@@ -209,8 +219,22 @@ Provide your JSON response.`,
       });
 
       // Call Claude API - using Sonnet 3.5 for vision + large context
-      console.log(`Sending to Claude with ${messageContent.length} content blocks, imageAdded=${imageAdded}`);
+      console.log("=== CLAUDE REQUEST DEBUG ===");
+      console.log(`Message content blocks: ${messageContent.length}`);
       console.log(`Message content types: ${messageContent.map(c => c.type).join(", ")}`);
+      console.log(`imageAdded flag: ${imageAdded}`);
+      
+      // Log the text content being sent
+      const textContent = messageContent.find(c => c.type === "text");
+      if (textContent && textContent.text) {
+        console.log(`Text content length: ${textContent.text.length} chars`);
+        console.log(`Text content preview: ${textContent.text.slice(0, 200)}...`);
+      }
+      
+      // Log system prompt info
+      console.log(`System prompt length: ${systemPrompt.length} chars`);
+      console.log(`System prompt contains notes: ${systemPrompt.includes("=== NOTE")}`);
+      console.log(`System prompt preview (first 500 chars): ${systemPrompt.slice(0, 500)}`);
       
       const requestBody = {
         model: "claude-3-5-sonnet-20241022", // Claude 3.5 Sonnet - best for vision
@@ -224,7 +248,7 @@ Provide your JSON response.`,
         ],
       };
       
-      console.log(`Request body (without image data): model=${requestBody.model}, max_tokens=${requestBody.max_tokens}`);
+      console.log(`Full request: model=${requestBody.model}, system_length=${systemPrompt.length}, messages=${requestBody.messages.length}`);
       
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
