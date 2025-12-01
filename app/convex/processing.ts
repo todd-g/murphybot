@@ -404,7 +404,7 @@ Provide your JSON response.`,
         });
       }
 
-      // Log the activity
+      // Log the activity with debug info
       await ctx.runMutation(internal.processingHelpers.logActivity, {
         action: suggestion.action === "append" ? "appended" : "created",
         captureId: capture._id,
@@ -413,6 +413,14 @@ Provide your JSON response.`,
         noteTitle: finalTitle,
         suggestedArea: suggestion.areaName,
         reasoning: suggestion.reasoning,
+        debug: {
+          notesInContext: sortedNotes.length,
+          imageAttached: imageAdded,
+          systemPromptLength: systemPrompt.length,
+          captureText: capture.text?.slice(0, 200),
+          captureHadImage: hasImage,
+          imageUrl: capture.fileUrl || undefined,
+        },
       });
 
       // Mark capture as done

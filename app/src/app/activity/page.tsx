@@ -181,6 +181,30 @@ export default function ActivityPage() {
                   <p className="text-sm text-muted-foreground italic">
                     &ldquo;{activity.reasoning}&rdquo;
                   </p>
+
+                  {/* Debug info */}
+                  {activity.debug && (
+                    <details className="text-xs border border-border/50 rounded p-2 bg-muted/30">
+                      <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                        Debug Info
+                      </summary>
+                      <div className="mt-2 space-y-1 font-mono">
+                        <p>📝 Notes in context: <span className="text-primary">{activity.debug.notesInContext}</span></p>
+                        <p>🖼️ Image attached to prompt: <span className={activity.debug.imageAttached ? "text-green-400" : "text-red-400"}>{activity.debug.imageAttached ? "YES" : "NO"}</span></p>
+                        <p>📷 Capture had image: <span className={activity.debug.captureHadImage ? "text-green-400" : "text-muted-foreground"}>{activity.debug.captureHadImage ? "YES" : "NO"}</span></p>
+                        <p>📏 System prompt: <span className="text-primary">{activity.debug.systemPromptLength?.toLocaleString()} chars</span></p>
+                        {activity.debug.captureText && (
+                          <p>💬 Capture text: <span className="text-muted-foreground">{activity.debug.captureText}</span></p>
+                        )}
+                        {activity.debug.imageUrl && (
+                          <div className="mt-2">
+                            <p>🔗 Image URL: <span className="text-muted-foreground break-all">{activity.debug.imageUrl.slice(0, 60)}...</span></p>
+                            <img src={activity.debug.imageUrl} alt="Captured" className="mt-1 max-h-32 rounded border" />
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  )}
                 </CardContent>
               </Card>
             ))

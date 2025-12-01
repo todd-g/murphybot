@@ -35,13 +35,22 @@ export default defineSchema({
   // Activity log - tracks AI auto-processing actions
   activity_log: defineTable({
     createdAt: v.number(),
-    action: v.string(), // "created" | "updated"
+    action: v.string(), // "created" | "updated" | "appended"
     captureId: v.optional(v.id("capture_queue")),
     noteId: v.id("notes"),
     notePath: v.string(),
     noteTitle: v.string(),
     suggestedArea: v.string(), // e.g. "Ideas", "Media"
     reasoning: v.string(), // AI's explanation
+    // Debug info
+    debug: v.optional(v.object({
+      notesInContext: v.number(),
+      imageAttached: v.boolean(),
+      systemPromptLength: v.number(),
+      captureText: v.optional(v.string()),
+      captureHadImage: v.boolean(),
+      imageUrl: v.optional(v.string()),
+    })),
   }).index("by_createdAt", ["createdAt"]),
 });
 

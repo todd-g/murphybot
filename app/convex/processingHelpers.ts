@@ -122,6 +122,14 @@ export const logActivity = internalMutation({
     noteTitle: v.string(),
     suggestedArea: v.string(),
     reasoning: v.string(),
+    debug: v.optional(v.object({
+      notesInContext: v.number(),
+      imageAttached: v.boolean(),
+      systemPromptLength: v.number(),
+      captureText: v.optional(v.string()),
+      captureHadImage: v.boolean(),
+      imageUrl: v.optional(v.string()),
+    })),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("activity_log", {
@@ -133,6 +141,7 @@ export const logActivity = internalMutation({
       noteTitle: args.noteTitle,
       suggestedArea: args.suggestedArea,
       reasoning: args.reasoning,
+      debug: args.debug,
     });
   },
 });
