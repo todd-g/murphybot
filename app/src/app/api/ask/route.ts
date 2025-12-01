@@ -5,9 +5,7 @@ import { api } from "../../../../convex/_generated/api";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Anthropic client will be initialized in the handler
 
 // JD area descriptions for context
 const JD_AREAS: Record<string, string> = {
@@ -26,13 +24,22 @@ const JD_AREAS: Record<string, string> = {
 export async function POST(request: NextRequest) {
   try {
     // Check for API key
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
       console.error("ANTHROPIC_API_KEY is not set");
       return NextResponse.json(
         { error: "API key not configured" },
         { status: 500 }
       );
     }
+    
+    // Log key prefix for debugging (first 20 chars only for security)
+    console.log("API key prefix:", apiKey.substring(0, 20) + "...");
+    
+    // Initialize Anthropic client with the key
+    const anthropic = new Anthropic({
+      apiKey: apiKey,
+    });
 
     const { question } = await request.json();
 
