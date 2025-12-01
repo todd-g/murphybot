@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
-import { Clock, FileText, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, FileText, Sparkles, ArrowRight, Loader2, Inbox } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // JD area colors for visual distinction
@@ -38,6 +38,9 @@ function formatTimeAgo(timestamp: number): string {
 
 export default function ActivityPage() {
   const activities = useQuery(api.activity.getRecent, { limit: 50 });
+  const pendingCaptures = useQuery(api.captures.getPending);
+
+  const pendingCount = pendingCaptures?.length ?? 0;
 
   return (
     <main className="p-6">
@@ -50,27 +53,71 @@ export default function ActivityPage() {
           <div>
             <h1 className="text-2xl font-bold">Activity</h1>
             <p className="text-muted-foreground">
-              AI auto-processing log
+              Captures and AI processing log
             </p>
           </div>
         </div>
 
-        {/* Activity List */}
+        {/* Pending Captures Section */}
+        {pendingCaptures === undefined ? (
+          <Card>
+            <CardContent className="py-4 text-center text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+            </CardContent>
+          </Card>
+        ) : pendingCount > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Inbox className="h-4 w-4" />
+              <span>{pendingCount} pending capture{pendingCount !== 1 ? "s" : ""}</span>
+              <span className="text-xs">· Auto-processing every 5 min</span>
+            </div>
+            {pendingCaptures.map((capture) => (
+              <Card key={capture._id} className="border-dashed border-primary/30 bg-primary/5">
+                <CardContent className="py-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-1.5 rounded bg-primary/10">
+                      <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                        <span className="capitalize">{capture.source}</span>
+                        <span>·</span>
+                        <span>{formatTimeAgo(capture.createdAt)}</span>
+                      </div>
+                      <p className="text-sm line-clamp-2">
+                        {capture.text || "[Image/file capture]"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Processed Activity List */}
         <div className="space-y-3">
+          {pendingCount > 0 && activities && activities.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t">
+              <Sparkles className="h-4 w-4" />
+              <span>Recently processed</span>
+            </div>
+          )}
+          
           {activities === undefined ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                 Loading activity...
               </CardContent>
             </Card>
-          ) : activities.length === 0 ? (
+          ) : activities.length === 0 && pendingCount === 0 ? (
             <Card className="border-dashed">
               <CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                 <p className="text-muted-foreground mb-2">No activity yet</p>
                 <p className="text-sm text-muted-foreground">
-                  Captures are auto-processed every 5 minutes.
-                  <br />
                   <Link href="/capture" className="text-primary hover:underline">
                     Capture something
                   </Link>
@@ -121,4 +168,3 @@ export default function ActivityPage() {
     </main>
   );
 }
-

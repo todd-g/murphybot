@@ -5,9 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import {
   FolderOpen,
-  Zap,
   Search,
-  Sparkles,
   Clock,
 } from "lucide-react"
 
@@ -20,6 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 const data = {
@@ -66,13 +65,19 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { setOpenMobile } = useSidebar()
+
+  const handleClick = () => {
+    setOpenMobile(false)
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/" onClick={handleClick}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
                   <Image
                     src="/logo.png"
