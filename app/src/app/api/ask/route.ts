@@ -44,16 +44,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Search for relevant notes in Convex
-    const searchResults = await convex.query(api.notes.search, {
-      query: question,
-    });
+    let contextNotes;
+    try {
+      const searchResults = await convex.query(api.notes.search, {
+        query: question,
+      });
 
-    // If no search results, get all notes as fallback (for small knowledge bases)
-    let contextNotes = searchResults;
-    if (searchResults.length === 0) {
-      const allNotes = await convex.query(api.notes.getAll, {});
-      // Take first 10 notes if search returned nothing
-      contextNotes = allNotes.slice(0, 10);
+      // If no search results, get all notes as fallback (for small knowledge bases)
+      contextNotes = searchResults;
+      if (searchResults.length === 0) {
+        const allNotes = await convex.query(api.notes.getAll, {});
+        // Take first 10 notes if search returned nothing
+        contextNotes = allNotes.slice(0, 10);
+      }
+    } catch (convexError) {
+      console.error("Convex error:", convexError);
+      return NextResponse.json(
+        { error: `Convex query failed: ${convexError instanceof Error ? convexError.message : "Unknown"}` },
+        { status: 500 }
+      );
     }
 
     // Format notes for Claude context
@@ -98,23 +107,32 @@ User's question: ${question}`
 Please let them know that there are no notes to search yet, and they should add some content to their second brain first.`;
 
     // Call Claude API
-    const message = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-latest",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
-    });
+    let responseText;
+    try {
+      const message = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-latest",
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: userMessage,
+          },
+        ],
+      });
 
-    // Extract text from response
-    const responseText = message.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("\n");
+      // Extract text from response
+      responseText = message.content
+        .filter((block): block is Anthropic.TextBlock => block.type === "text")
+        .map((block) => block.text)
+        .join("\n");
+    } catch (anthropicError) {
+      console.error("Anthropic error:", anthropicError);
+      return NextResponse.json(
+        { error: `Claude API failed: ${anthropicError instanceof Error ? anthropicError.message : "Unknown"}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       answer: responseText,
