@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../convex/_generated/api";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-// Anthropic client will be initialized in the handler
 
 // JD area descriptions for context
 const JD_AREAS: Record<string, string> = {
@@ -32,14 +29,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
-    // Log key prefix for debugging (first 20 chars only for security)
-    console.log("API key prefix:", apiKey.substring(0, 20) + "...");
-    
-    // Initialize Anthropic client with the key
-    const anthropic = new Anthropic({
-      apiKey: apiKey,
-    });
 
     const { question } = await request.json();
 
@@ -113,25 +102,44 @@ User's question: ${question}`
 
 Please let them know that there are no notes to search yet, and they should add some content to their second brain first.`;
 
-    // Call Claude API
+    // Call Claude API using fetch
     let responseText;
     try {
-      const message = await anthropic.messages.create({
-        model: "claude-3-haiku-20240307",
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: userMessage,
-          },
-        ],
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-3-haiku-20240307",
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: [
+            {
+              role: "user",
+              content: userMessage,
+            },
+          ],
+        }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("Anthropic API error:", response.status, errorData);
+        return NextResponse.json(
+          { error: `Claude API failed: ${response.status} ${errorData}` },
+          { status: 500 }
+        );
+      }
+
+      const data = await response.json();
+      
       // Extract text from response
-      responseText = message.content
-        .filter((block): block is Anthropic.TextBlock => block.type === "text")
-        .map((block) => block.text)
+      responseText = data.content
+        .filter((block: { type: string }) => block.type === "text")
+        .map((block: { text: string }) => block.text)
         .join("\n");
     } catch (anthropicError) {
       console.error("Anthropic error:", anthropicError);
@@ -154,4 +162,3 @@ Please let them know that there are no notes to search yet, and they should add 
     );
   }
 }
-
