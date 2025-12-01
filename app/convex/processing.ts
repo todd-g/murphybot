@@ -71,10 +71,21 @@ export const processNextCapture = internalAction({
       // Fetch existing notes for context
       const existingNotes = await ctx.runQuery(internal.processingHelpers.getAllNotes);
       
-      // Build notes summary for AI context
-      const notesSummary = existingNotes.map(n => 
-        `- [${n._id}] ${n.jdId}: "${n.title}" (${n.path})`
-      ).join("\n");
+      // Sort notes by JD ID to show proper organization
+      const sortedNotes = [...existingNotes].sort((a, b) => a.jdId.localeCompare(b.jdId));
+      
+      // Build FULL notes context - include complete content so AI understands:
+      // 1. The actual facts/information stored
+      // 2. The organizational patterns and formatting style
+      const notesContext = sortedNotes.map(n => {
+        return `=== NOTE [${n._id}] ===
+JD ID: ${n.jdId}
+Path: ${n.path}
+Title: ${n.title}
+
+${n.content}
+=== END NOTE ===`;
+      }).join("\n\n");
       
       // Build the prompt
       const systemPrompt = `You are an assistant that helps organize captured notes into a personal knowledge base using the Johnny.Decimal system.
@@ -82,8 +93,16 @@ export const processNextCapture = internalAction({
 The knowledge base has these areas:
 ${JD_AREAS.map((a) => `- ${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}`).join("\n")}
 
-EXISTING NOTES IN THE SYSTEM:
-${notesSummary || "(No notes yet)"}
+===========================================
+COMPLETE KNOWLEDGE BASE (FULL CONTENT)
+===========================================
+
+Study these notes carefully. They show:
+1. What information already exists (facts, people, projects, etc.)
+2. How the owner organizes things (lists vs individual notes, formatting patterns)
+3. The JD IDs and paths already in use
+
+${notesContext || "(No notes yet)"}
 
 CRITICAL RULES:
 1. PREFER APPENDING to existing notes when the content fits. For example:
@@ -113,7 +132,16 @@ Respond with JSON in this exact format:
 }`;
 
       const captureContent = capture.text || "[No text content]";
+      
+      // Debug: log what we have in the capture
+      console.log("=== CAPTURE DEBUG ===");
+      console.log("fileStorageId:", capture.fileStorageId);
+      console.log("fileUrl:", capture.fileUrl);
+      console.log("text:", capture.text?.slice(0, 100));
+      console.log("contentType:", capture.contentType);
+      
       const hasImage = !!capture.fileUrl;
+      console.log("hasImage:", hasImage);
 
       // Build message content - can be multimodal with images
       const messageContent: Array<{ type: string; text?: string; source?: { type: string; media_type: string; data: string } }> = [];
@@ -122,11 +150,16 @@ Respond with JSON in this exact format:
       let imageAdded = false;
       if (hasImage && capture.fileUrl) {
         try {
-          console.log(`Fetching image: ${capture.fileUrl}`);
+          console.log(`Fetching image from URL: ${capture.fileUrl}`);
           const imageResponse = await fetch(capture.fileUrl);
+          
+          console.log(`Image fetch response: ${imageResponse.status} ${imageResponse.statusText}`);
+          console.log(`Content-Type header: ${imageResponse.headers.get("content-type")}`);
           
           if (imageResponse.ok) {
             const imageBuffer = await imageResponse.arrayBuffer();
+            console.log(`Image buffer size: ${imageBuffer.byteLength} bytes`);
+            
             const base64Image = Buffer.from(imageBuffer).toString("base64");
             
             // Get media type from Content-Type header, fallback to jpeg
@@ -146,13 +179,15 @@ Respond with JSON in this exact format:
               },
             });
             imageAdded = true;
-            console.log(`Added image to message (${mediaType}, ${base64Image.length} chars base64)`);
+            console.log(`SUCCESS: Added image to message (${mediaType}, ${base64Image.length} chars base64)`);
           } else {
-            console.error(`Failed to fetch image: ${imageResponse.status} ${imageResponse.statusText}`);
+            console.error(`FAILED to fetch image: ${imageResponse.status} ${imageResponse.statusText}`);
           }
         } catch (imageError) {
-          console.error("Failed to fetch image:", imageError);
+          console.error("EXCEPTION fetching image:", imageError);
         }
+      } else {
+        console.log("No image to fetch (fileUrl is empty or undefined)");
       }
 
       // Add the text content
@@ -173,7 +208,8 @@ ${imageAdded ? "Remember: Analyze the IMAGE above and describe what you see in t
 Provide your JSON response.`,
       });
 
-      // Call Claude API with vision-capable model
+      // Call Claude API - using Sonnet for better vision + large context handling
+      console.log(`Sending to Claude with ${messageContent.length} content blocks, imageAdded=${imageAdded}`);
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -182,8 +218,8 @@ Provide your JSON response.`,
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307", // Haiku supports vision
-          max_tokens: 1024,
+          model: "claude-sonnet-4-20250514", // Sonnet for better vision + context
+          max_tokens: 2048,
           system: systemPrompt,
           messages: [
             {
