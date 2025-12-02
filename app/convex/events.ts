@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
 // Event extraction regex - matches: 📅 Event: Title | YYYY-MM-DD | HH:MM | Location
@@ -412,4 +413,15 @@ export const getAllNotesForExtraction = internalMutation({
 
 // Export the parsing function for use in actions
 export { parseEventsFromContent };
+
+// Manual trigger for event extraction (calls the internal action via scheduler)
+export const triggerExtraction = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // We can't call internal actions directly from mutations,
+    // but we can use the scheduler to trigger it
+    await ctx.scheduler.runAfter(0, internal.eventExtraction.extractEventsFromAllNotes);
+    return { scheduled: true };
+  },
+});
 
