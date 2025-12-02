@@ -11,6 +11,7 @@
 import type * as activity from "../activity.js";
 import type * as captures from "../captures.js";
 import type * as crons from "../crons.js";
+import type * as migrate from "../migrate.js";
 import type * as notes from "../notes.js";
 import type * as processing from "../processing.js";
 import type * as processingHelpers from "../processingHelpers.js";
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   activity: typeof activity;
   captures: typeof captures;
   crons: typeof crons;
+  migrate: typeof migrate;
   notes: typeof notes;
   processing: typeof processing;
   processingHelpers: typeof processingHelpers;

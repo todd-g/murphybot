@@ -14,18 +14,68 @@ interface ProcessResult {
   area?: string;
 }
 
-// JD area info for AI context
+// Category name lookup - maps category number to folder name
+const CATEGORY_FOLDERS: Record<string, string> = {
+  // Index (0X)
+  "01": "01-system", "02": "02-templates", "03": "03-settings",
+  // Reference (1X)
+  "11": "11-technical", "12": "12-howto", "13": "13-checklists", "14": "14-resources",
+  // Projects (2X)
+  "21": "21-active", "22": "22-planned", "23": "23-completed",
+  // People (3X)
+  "31": "31-family", "32": "32-friends", "33": "33-professional", "34": "34-providers",
+  // Media (4X)
+  "41": "41-movies", "42": "42-tv", "43": "43-books", "44": "44-podcasts", "45": "45-music", "46": "46-games",
+  // Events (5X)
+  "51": "51-local", "52": "52-travel", "53": "53-appointments", "54": "54-holidays",
+  // Ideas (6X)
+  "61": "61-projects", "62": "62-business", "63": "63-creative", "64": "64-random",
+  // Home (7X)
+  "71": "71-pets", "72": "72-vehicles", "73": "73-maintenance", "74": "74-purchases", "75": "75-utilities",
+  // Personal (8X)
+  "81": "81-journal", "82": "82-goals", "83": "83-health", "84": "84-finances",
+  // Archive (9X)
+  "91": "91-projects", "92": "92-events", "93": "93-reference",
+};
+
+// Get folder path from JD ID (e.g., "41.01" -> "41-movies")
+function getCategoryFolder(jdId: string): string {
+  const category = jdId.split(".")[0]; // "41.01" -> "41"
+  if (CATEGORY_FOLDERS[category]) {
+    return CATEGORY_FOLDERS[category];
+  }
+  // Fallback: if it's an X0 (area index), use area folder
+  const areaPrefix = category.charAt(0);
+  const areaInfo = JD_AREAS.find((a) => a.prefix === areaPrefix);
+  if (areaInfo && category.endsWith("0")) {
+    return `${category}-${areaInfo.name.toLowerCase().replace(/\s+/g, "-")}`;
+  }
+  // Last fallback: just use the category number with generic name
+  return `${category}-notes`;
+}
+
+// JD area info for AI context - with suggested categories
 const JD_AREAS = [
-  { prefix: "0", name: "Index", folder: "00-index", description: "System index and meta information" },
-  { prefix: "1", name: "Reference", folder: "10-reference", description: "Reference materials and documentation" },
-  { prefix: "2", name: "Projects", folder: "20-projects", description: "Active projects and work" },
-  { prefix: "3", name: "People", folder: "30-people", description: "People, contacts, and relationships" },
-  { prefix: "4", name: "Media", folder: "40-media", description: "Books, movies, TV shows, games, music" },
-  { prefix: "5", name: "Events", folder: "50-events", description: "Events, calendar, and scheduling" },
-  { prefix: "6", name: "Ideas", folder: "60-ideas", description: "Ideas, brainstorms, and creative thoughts" },
-  { prefix: "7", name: "Home", folder: "70-home", description: "Home and household management" },
-  { prefix: "8", name: "Personal", folder: "80-personal", description: "Personal notes and life" },
-  { prefix: "9", name: "Archive", folder: "90-archive", description: "Archived and historical content" },
+  { prefix: "0", name: "Index", description: "System index and meta information",
+    categories: "01=System, 02=Templates, 03=Settings" },
+  { prefix: "1", name: "Reference", description: "Reference materials and documentation",
+    categories: "11=Technical Docs, 12=How-To Guides, 13=Checklists, 14=Resources" },
+  { prefix: "2", name: "Projects", description: "Active projects and work",
+    categories: "21=Active Projects, 22=Planned Projects, 23=Completed Projects" },
+  { prefix: "3", name: "People", description: "People, contacts, and relationships",
+    categories: "31=Family, 32=Friends, 33=Professional, 34=Service Providers" },
+  { prefix: "4", name: "Media", description: "Books, movies, TV shows, games, music",
+    categories: "41=Movies, 42=TV Shows, 43=Books, 44=Podcasts, 45=Music, 46=Games" },
+  { prefix: "5", name: "Events", description: "Events, calendar, and scheduling",
+    categories: "51=Local Events, 52=Travel, 53=Appointments, 54=Holidays" },
+  { prefix: "6", name: "Ideas", description: "Ideas, brainstorms, and creative thoughts",
+    categories: "61=Project Ideas, 62=Business Ideas, 63=Creative Writing, 64=Random Thoughts" },
+  { prefix: "7", name: "Home", description: "Home and household management",
+    categories: "71=Pets, 72=Vehicles, 73=Maintenance, 74=Purchases, 75=Utilities" },
+  { prefix: "8", name: "Personal", description: "Personal notes and life",
+    categories: "81=Journal, 82=Goals, 83=Health, 84=Finances" },
+  { prefix: "9", name: "Archive", description: "Archived and historical content",
+    categories: "91=Completed Projects, 92=Past Events, 93=Old Reference" },
 ];
 
 interface AISuggestion {
@@ -101,93 +151,98 @@ ${n.content}
       const systemPrompt = `You are an assistant that helps organize captured notes into a personal knowledge base using the Johnny.Decimal system.
 
 ===========================================
-JOHNNY.DECIMAL SYSTEM EXPLAINED
+JOHNNY.DECIMAL - THREE LEVEL HIERARCHY
 ===========================================
 
-Johnny.Decimal is a hierarchical organization system with THREE levels:
+Johnny.Decimal has EXACTLY three levels. Understanding this is CRITICAL:
 
-1. AREAS (10-19, 20-29, etc.) - Broad life categories
-2. CATEGORIES (X1, X2, X3...) - Specific topics within an area  
-3. IDs (XX.YY) - Individual items or notes
+LEVEL 1: AREAS (X0-X9)
+  - The tens digit defines the AREA
+  - 30-39 = People, 40-49 = Media, 70-79 = Home, etc.
+  - X0.00 is ONLY for the area's index/overview file
 
-EXAMPLE for Area 70 (Home):
-- 70 = Home (the area)
-- 71 = Pets (a category - all pet-related stuff)
-- 72 = Vehicles (another category)
-- 73 = Maintenance (another category)
-- 71.01 = First pet note (e.g., "Our dog Maggie")
-- 71.02 = Second pet note (e.g., "Vet records")
-- 72.01 = First vehicle note (e.g., "Toyota Camry")
+LEVEL 2: CATEGORIES (X1, X2, X3... X9)  
+  - The ones digit (1-9) defines the CATEGORY within an area
+  - Categories GROUP related topics together
+  - Example: In 40-49 Media area:
+    - 41 = Movies (ALL movie-related notes go here)
+    - 42 = TV Shows
+    - 43 = Books
+    - 44 = Podcasts
+    - 45 = Music
+    - 46 = Games
 
-KEY PRINCIPLES:
-- Categories (X1, X2, X3) GROUP related things together
-- The .YY number is just a sequential ID within that category
-- ONE category should contain ALL notes about that topic
-- Don't spread related items across different categories
+LEVEL 3: IDs (XX.YY)
+  - The decimal number is the specific NOTE within a category
+  - Sequential: .01, .02, .03, etc.
+  - Example: 41.01 = first movies note, 41.02 = second movies note
 
-EXAMPLE for Area 30 (People):
-- 31 = Family (category for all family members)
-- 32 = Friends
-- 33 = Professional contacts
-- 31.01 = Note about family member 1
-- 31.02 = Note about family member 2
+===========================================
+AREAS AND THEIR CATEGORIES
+===========================================
 
-The knowledge base has these AREAS:
-${JD_AREAS.map((a) => `- ${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}`).join("\n")}
+${JD_AREAS.map((a) => `${a.prefix}0-${a.prefix}9 ${a.name}: ${a.description}
+  Categories: ${a.categories}`).join("\n\n")}
+
+===========================================
+CRITICAL RULES - READ CAREFULLY
+===========================================
+
+RULE 1: NEVER USE X0.YY FOR CONTENT
+  - WRONG: 40.01 for a movie, 30.01 for family, 70.02 for pets
+  - RIGHT: 41.01 for a movie, 31.01 for family, 71.01 for pets
+  - X0.00 is ONLY for the area index file (e.g., 40.00 = Media Index)
+
+RULE 2: USE CATEGORIES TO GROUP RELATED CONTENT
+  - A horror movie → 41 (Movies category) → 41.01
+  - Info about dog → 71 (Pets category) → 71.01
+  - Family member info → 31 (Family category) → 31.01
+  - A video game → 46 (Games category) → 46.01
+
+RULE 3: FOLDER STRUCTURE MATCHES CATEGORIES
+  - Category 41 (Movies) → folder "41-movies"
+  - Category 71 (Pets) → folder "71-pets"
+  - Category 31 (Family) → folder "31-family"
+  - Path format: {category}-{name}/{jdId}-{slug}.md
+
+RULE 4: PREFER APPENDING TO EXISTING NOTES
+  - New movie to watch → append to existing 41.01 movies list
+  - New info about existing person → append to their note
+  - Same topic = same note (don't create duplicates)
 
 ===========================================
 COMPLETE KNOWLEDGE BASE (FULL CONTENT)
 ===========================================
 
 Study these notes carefully. They show:
-1. What information already exists (facts, people, projects, etc.)
-2. How the owner organizes things (lists vs individual notes, formatting patterns)
-3. The JD IDs and paths already in use
+1. What information already exists (people, projects, etc.)
+2. The organizational patterns already in use
+3. The JD IDs and paths already assigned
 
 ${notesContext || "(No notes yet)"}
 
-CRITICAL RULES FOR ORGANIZING:
+===========================================
+YOUR TASK
+===========================================
 
-1. LOOK AT EXISTING CATEGORIES FIRST
-   - Check what categories (X1, X2, X3) already exist in each area
-   - If a category exists for this topic, use it
-   - If no category exists, create one with the NEXT available number
-
-2. PREFER APPENDING to existing notes when content fits:
-   - New movie → append to existing movies note
-   - New family info → append to existing family note
-   - Same topic = same note (don't create duplicates)
-
-3. CREATE NEW NOTE only when:
-   - This is a genuinely NEW category not yet in the system
-   - OR it's a distinct sub-item that deserves its own note
-
-4. ID ASSIGNMENT:
-   - For NEW categories: Use next available (if 71 exists, new category = 72)
-   - For items in existing category: Use category.next (if 71.01 exists, next = 71.02)
-   - The .YY is sequential within each category
-
-5. THINK HIERARCHICALLY:
-   - "Dog named Maggie" → Pets category → 71.01 (not 70.02)
-   - "Family member" → Family category → 31.01
-   - Group related things in the SAME category
-
-Your job is to:
 1. Analyze the captured content (including any images)
-2. Check if it belongs in an EXISTING note (append) or needs a NEW note (create)
-3. Format the content as proper markdown
-4. If there's an image, include a description of what's in the image
+2. Determine the correct AREA and CATEGORY
+3. Check if content should APPEND to an existing note or CREATE a new one
+4. Format as proper markdown
+5. If there's an image, describe what you see
 
 Respond with JSON in this exact format:
 {
   "action": "append" or "create",
-  "existingNoteId": "ID from the list above (only if action is append)",
-  "area": "4",
-  "jdId": "40.03",
-  "title": "For new notes: the title. For append: the section header to add",
-  "content": "The markdown content to add (for append: just the new section, for create: full note)",
-  "reasoning": "Why you chose to append/create and to this location"
-}`;
+  "existingNoteId": "ID from the notes above (only if action is append)",
+  "area": "41",
+  "jdId": "41.01",
+  "title": "For new notes: the title. For append: the section header",
+  "content": "The markdown content to add",
+  "reasoning": "Why you chose this category and action"
+}
+
+REMEMBER: Use categories (41, 42, 71, 31) NOT area-level IDs (40.01, 70.01, 30.01)!`;
 
       const captureContent = capture.text || "[No text content]";
       
@@ -337,25 +392,26 @@ Provide your JSON response.`,
         const areaPrefix = String(parsed.area).charAt(0);
         const areaInfo = JD_AREAS.find((a) => a.prefix === areaPrefix) || JD_AREAS[6];
         
+        const jdId = parsed.jdId || `${areaInfo.prefix}1.01`; // Default to X1.01, not X0.01
         suggestion = {
           action: parsed.action === "append" ? "append" : "create",
           existingNoteId: parsed.existingNoteId,
           area: parsed.area || "6",
           areaName: areaInfo.name,
-          folder: areaInfo.folder,
-          jdId: parsed.jdId || `${areaInfo.prefix}0.01`,
+          folder: getCategoryFolder(jdId),
+          jdId: jdId,
           title: parsed.title || "Untitled Note",
           content: parsed.content || `# ${parsed.title}\n\n${captureContent}`,
           reasoning: parsed.reasoning || "AI suggestion",
         };
       } catch (parseError) {
-        // Fallback to Ideas - create new
+        // Fallback to Ideas - create new (use 61 = Project Ideas category)
         suggestion = {
           action: "create",
-          area: "6",
+          area: "61",
           areaName: "Ideas",
-          folder: "60-ideas",
-          jdId: "60.01",
+          folder: "61-projects",
+          jdId: "61.01",
           title: captureContent.slice(0, 50).replace(/\n/g, " ").trim() || "New Note",
           content: `# Note\n\n${captureContent}`,
           reasoning: "Could not parse AI suggestion, defaulting to Ideas",
