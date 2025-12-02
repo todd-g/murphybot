@@ -42,11 +42,16 @@ export default defineSchema({
     location: v.optional(v.string()),
     jdCategory: v.string(), // "50.01" local, "50.02" travel, "50.03" appointments, "50.04" holidays
     noteId: v.optional(v.id("notes")), // Link to related note if exists
+    // Source tracking for extracted events
+    sourceNoteId: v.optional(v.id("notes")), // Note this event was extracted from
+    sourceText: v.optional(v.string()), // The original event syntax line (for deduplication)
+    isExtracted: v.optional(v.boolean()), // true if auto-extracted from notes
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_startDate", ["startDate"])
-    .index("by_jdCategory", ["jdCategory"]),
+    .index("by_jdCategory", ["jdCategory"])
+    .index("by_sourceNoteId", ["sourceNoteId"]),
 
   // Activity log - tracks AI auto-processing actions
   activity_log: defineTable({

@@ -222,6 +222,29 @@ Study these notes carefully. They show:
 ${notesContext || "(No notes yet)"}
 
 ===========================================
+EVENT SYNTAX (IMPORTANT!)
+===========================================
+
+When the captured content mentions a DATE, APPOINTMENT, EVENT, or SCHEDULED ACTIVITY,
+include an event line in the note content using this EXACT format:
+
+📅 Event: Title | YYYY-MM-DD | HH:MM | Location
+
+Examples:
+📅 Event: Dentist Appointment | 2025-12-15 | 14:00 | Dr. Smith's Office
+📅 Event: Christmas Dinner | 2025-12-25 | 18:00 | Grandma's House
+📅 Event: Basketball Practice Start | 2026-01-11
+
+Rules for events:
+- Date is REQUIRED in YYYY-MM-DD format
+- Time is OPTIONAL (24-hour format HH:MM)
+- Location is OPTIONAL
+- Separate fields with | (pipe)
+- Put the event line in the note content where it's relevant
+- One event per line
+- The system will automatically extract these into the calendar
+
+===========================================
 YOUR TASK
 ===========================================
 
@@ -230,6 +253,7 @@ YOUR TASK
 3. Check if content should APPEND to an existing note or CREATE a new one
 4. Format as proper markdown
 5. If there's an image, describe what you see
+6. If there are dates/events mentioned, include 📅 Event lines in the content!
 
 Respond with JSON in this exact format:
 {

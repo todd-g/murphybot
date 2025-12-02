@@ -10,5 +10,12 @@ crons.interval(
   internal.processing.processNextCapture
 );
 
+// Extract events from notes every 5 minutes
+crons.interval(
+  "extract events from notes",
+  { minutes: 5 },
+  internal.eventExtraction.extractEventsFromAllNotes
+);
+
 export default crons;
 

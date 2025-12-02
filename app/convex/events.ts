@@ -1,5 +1,24 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+
+// Event extraction regex - matches: 📅 Event: Title | YYYY-MM-DD | HH:MM | Location
+// Format: 📅 Event: Title | date | time (optional) | location (optional)
+const EVENT_REGEX = /📅\s*Event:\s*([^|]+)\s*\|\s*(\d{4}-\d{2}-\d{2})(?:\s*\|\s*(\d{1,2}:\d{2}))?(?:\s*\|\s*([^|\n]+))?/g;
+
+// JD category detection based on note area
+function detectJdCategory(jdId: string): string {
+  const areaPrefix = jdId.charAt(0);
+  // Default categories by area
+  const areaCategoryMap: Record<string, string> = {
+    "5": "50.01", // Events area -> Local Events
+    "2": "50.03", // Projects -> Appointments (meetings, deadlines)
+    "3": "50.03", // People -> Appointments
+    "7": "50.01", // Home -> Local Events
+    "8": "50.03", // Personal -> Appointments
+  };
+  return areaCategoryMap[areaPrefix] || "50.01";
+}
 
 // Create a new event
 export const create = mutation({
@@ -242,4 +261,155 @@ function escapeIcsText(text: string): string {
     .replace(/,/g, "\\,")
     .replace(/\n/g, "\\n");
 }
+
+// ============================================================
+// EVENT EXTRACTION FROM NOTES
+// ============================================================
+
+// Parse events from a single note's content
+function parseEventsFromContent(content: string, noteId: Id<"notes">, jdId: string): Array<{
+  title: string;
+  startDate: string;
+  allDay: boolean;
+  location?: string;
+  jdCategory: string;
+  sourceNoteId: Id<"notes">;
+  sourceText: string;
+}> {
+  const events: Array<{
+    title: string;
+    startDate: string;
+    allDay: boolean;
+    location?: string;
+    jdCategory: string;
+    sourceNoteId: Id<"notes">;
+    sourceText: string;
+  }> = [];
+  
+  // Reset regex state
+  EVENT_REGEX.lastIndex = 0;
+  
+  let match;
+  while ((match = EVENT_REGEX.exec(content)) !== null) {
+    const [fullMatch, title, date, time, location] = match;
+    
+    // Build start date - with time if provided
+    let startDate = date;
+    let allDay = true;
+    if (time) {
+      // Pad time if needed (e.g., "9:00" -> "09:00")
+      const [hours, minutes] = time.split(":");
+      const paddedTime = `${hours.padStart(2, "0")}:${minutes}`;
+      startDate = `${date}T${paddedTime}:00`;
+      allDay = false;
+    }
+    
+    events.push({
+      title: title.trim(),
+      startDate,
+      allDay,
+      location: location?.trim(),
+      jdCategory: detectJdCategory(jdId),
+      sourceNoteId: noteId,
+      sourceText: fullMatch.trim(),
+    });
+  }
+  
+  return events;
+}
+
+// Internal mutation to upsert an extracted event
+export const upsertExtractedEvent = internalMutation({
+  args: {
+    title: v.string(),
+    startDate: v.string(),
+    allDay: v.boolean(),
+    location: v.optional(v.string()),
+    jdCategory: v.string(),
+    sourceNoteId: v.id("notes"),
+    sourceText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Check if we already have this exact event (by source text + note)
+    const existingEvents = await ctx.db
+      .query("events")
+      .withIndex("by_sourceNoteId", (q) => q.eq("sourceNoteId", args.sourceNoteId))
+      .collect();
+    
+    const existing = existingEvents.find(e => e.sourceText === args.sourceText);
+    
+    if (existing) {
+      // Update if anything changed
+      if (
+        existing.title !== args.title ||
+        existing.startDate !== args.startDate ||
+        existing.allDay !== args.allDay ||
+        existing.location !== args.location ||
+        existing.jdCategory !== args.jdCategory
+      ) {
+        await ctx.db.patch(existing._id, {
+          title: args.title,
+          startDate: args.startDate,
+          allDay: args.allDay,
+          location: args.location,
+          jdCategory: args.jdCategory,
+          updatedAt: Date.now(),
+        });
+        return { action: "updated", id: existing._id };
+      }
+      return { action: "unchanged", id: existing._id };
+    }
+    
+    // Create new extracted event
+    const now = Date.now();
+    const id = await ctx.db.insert("events", {
+      title: args.title,
+      startDate: args.startDate,
+      allDay: args.allDay,
+      location: args.location,
+      jdCategory: args.jdCategory,
+      sourceNoteId: args.sourceNoteId,
+      sourceText: args.sourceText,
+      isExtracted: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+    return { action: "created", id };
+  },
+});
+
+// Internal mutation to remove orphaned extracted events (source text no longer in note)
+export const cleanupOrphanedEvents = internalMutation({
+  args: {
+    noteId: v.id("notes"),
+    validSourceTexts: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const extractedEvents = await ctx.db
+      .query("events")
+      .withIndex("by_sourceNoteId", (q) => q.eq("sourceNoteId", args.noteId))
+      .filter((q) => q.eq(q.field("isExtracted"), true))
+      .collect();
+    
+    let removed = 0;
+    for (const event of extractedEvents) {
+      if (event.sourceText && !args.validSourceTexts.includes(event.sourceText)) {
+        await ctx.db.delete(event._id);
+        removed++;
+      }
+    }
+    return { removed };
+  },
+});
+
+// Internal mutation to get all notes for extraction
+export const getAllNotesForExtraction = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("notes").collect();
+  },
+});
+
+// Export the parsing function for use in actions
+export { parseEventsFromContent };
 
