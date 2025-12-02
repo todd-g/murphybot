@@ -149,13 +149,15 @@ export default function ActivityPage() {
             </Card>
           ) : (
             activities.map((activity) => (
-              <Card key={activity._id} className="hover:border-primary/30 transition-colors">
+              <Card key={activity._id} className={`hover:border-primary/30 transition-colors ${activity.action === "skipped" ? "opacity-60" : ""}`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-primary" />
                       <CardTitle className="text-base">
-                        {activity.action === "created" ? "Created" : "Updated"} note
+                        {activity.action === "created" ? "Created note" : 
+                         activity.action === "appended" ? "Updated note" :
+                         activity.action === "skipped" ? "Skipped (duplicate)" : "Updated note"}
                       </CardTitle>
                       <span className={`text-xs px-2 py-0.5 rounded ${AREA_COLORS[activity.suggestedArea] || "bg-muted text-muted-foreground"}`}>
                         {activity.suggestedArea}
@@ -167,16 +169,23 @@ export default function ActivityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Link 
-                    href={`/note/${activity.notePath}`}
-                    className="flex items-center gap-2 group"
-                  >
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium group-hover:text-primary transition-colors">
-                      {activity.noteTitle}
-                    </span>
-                    <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors ml-auto" />
-                  </Link>
+                  {activity.action !== "skipped" && activity.notePath !== "N/A" ? (
+                    <Link 
+                      href={`/note/${activity.notePath}`}
+                      className="flex items-center gap-2 group"
+                    >
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium group-hover:text-primary transition-colors">
+                        {activity.noteTitle}
+                      </span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors ml-auto" />
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <FileText className="h-4 w-4" />
+                      <span className="text-sm italic">Content already exists in knowledge base</span>
+                    </div>
+                  )}
                   
                   <p className="text-sm text-muted-foreground italic">
                     &ldquo;{activity.reasoning}&rdquo;

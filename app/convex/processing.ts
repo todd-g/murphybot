@@ -79,7 +79,7 @@ const JD_AREAS = [
 ];
 
 interface AISuggestion {
-  action: "create" | "append";
+  action: "create" | "append" | "skip";
   existingNoteId?: string;
   area: string;
   areaName: string;
@@ -88,6 +88,7 @@ interface AISuggestion {
   title: string;
   content: string;
   reasoning: string;
+  skipReason?: string;
 }
 
 // Process the next pending capture (runs in Node.js environment)
@@ -210,6 +211,16 @@ RULE 4: PREFER APPENDING TO EXISTING NOTES
   - New info about existing person → append to their note
   - Same topic = same note (don't create duplicates)
 
+RULE 5: DETECT DUPLICATES - SKIP IF ALREADY EXISTS
+  - Before creating or appending, CHECK if the information is ALREADY in an existing note
+  - If the capture content is ALREADY PRESENT in a note, return action: "skip"
+  - Read the full content of existing notes carefully before deciding
+  - Examples of when to skip:
+    - "Add Inception to movies" but "Inception" is already listed in 41.01
+    - An event that's already recorded in the events note
+    - Information that would just repeat what's already there
+  - When skipping, include skipReason explaining why
+
 ===========================================
 COMPLETE KNOWLEDGE BASE (FULL CONTENT)
 ===========================================
@@ -257,16 +268,19 @@ YOUR TASK
 
 Respond with JSON in this exact format:
 {
-  "action": "append" or "create",
+  "action": "append", "create", or "skip",
   "existingNoteId": "ID from the notes above (only if action is append)",
   "area": "41",
   "jdId": "41.01",
   "title": "For new notes: the title. For append: the section header",
-  "content": "The markdown content to add",
-  "reasoning": "Why you chose this category and action"
+  "content": "The markdown content to add (empty string if skip)",
+  "reasoning": "Why you chose this category and action",
+  "skipReason": "Only if action is skip - explain why the content already exists"
 }
 
-REMEMBER: Use categories (41, 42, 71, 31) NOT area-level IDs (40.01, 70.01, 30.01)!`;
+REMEMBER: 
+- Use categories (41, 42, 71, 31) NOT area-level IDs (40.01, 70.01, 30.01)!
+- If the information is ALREADY in an existing note, use action: "skip"!`;
 
       const captureContent = capture.text || "[No text content]";
       
@@ -442,9 +456,43 @@ Provide your JSON response.`,
         };
       }
 
-      let noteResult: { id: Id<"notes">; action: string; path?: string; title?: string };
+      let noteResult: { id: Id<"notes">; action: string; path?: string; title?: string } | null = null;
       let finalPath: string;
       let finalTitle: string;
+
+      // Handle skip action - content already exists
+      if (suggestion.action === "skip") {
+        console.log(`Skipping capture ${capture._id} - duplicate detected: ${suggestion.skipReason}`);
+        
+        // Log the skip (no noteId needed)
+        await ctx.runMutation(internal.processingHelpers.logActivity, {
+          action: "skipped",
+          captureId: capture._id,
+          notePath: "N/A",
+          noteTitle: "N/A",
+          suggestedArea: suggestion.areaName || "Unknown",
+          reasoning: suggestion.skipReason || suggestion.reasoning || "Duplicate content detected",
+          debug: {
+            notesInContext: sortedNotes.length,
+            imageAttached: imageAdded,
+            systemPromptLength: systemPrompt.length,
+            captureText: capture.text?.slice(0, 200),
+            captureHadImage: hasImage,
+            imageUrl: capture.fileUrl || undefined,
+          },
+        });
+
+        // Mark capture as done
+        await ctx.runMutation(internal.processingHelpers.updateCaptureStatus, {
+          id: capture._id,
+          status: "done",
+        });
+
+        return {
+          processed: true,
+          reason: `Skipped - ${suggestion.skipReason || "duplicate content"}`,
+        };
+      }
 
       if (suggestion.action === "append" && suggestion.existingNoteId) {
         // Append to existing note
@@ -506,10 +554,11 @@ Provide your JSON response.`,
           captureText: capture.text?.slice(0, 200),
           captureHadImage: hasImage,
           imageUrl: capture.fileUrl || undefined,
-          // Full prompt and response for debugging
-          fullSystemPrompt: systemPrompt,
-          fullUserMessage: JSON.stringify(messageContent),
-          fullClaudeResponse: responseText,
+          // TODO: Re-enable with proper truncation or separate storage
+          // These fields were causing 1MB document limit failures
+          // fullSystemPrompt: systemPrompt,
+          // fullUserMessage: JSON.stringify(messageContent),
+          // fullClaudeResponse: responseText,
         },
       });
 

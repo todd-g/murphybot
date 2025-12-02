@@ -56,9 +56,9 @@ export default defineSchema({
   // Activity log - tracks AI auto-processing actions
   activity_log: defineTable({
     createdAt: v.number(),
-    action: v.string(), // "created" | "updated" | "appended"
+    action: v.string(), // "created" | "updated" | "appended" | "skipped"
     captureId: v.optional(v.id("capture_queue")),
-    noteId: v.id("notes"),
+    noteId: v.optional(v.id("notes")), // Optional for skip actions
     notePath: v.string(),
     noteTitle: v.string(),
     suggestedArea: v.string(), // e.g. "Ideas", "Media"

@@ -117,7 +117,7 @@ export const logActivity = internalMutation({
   args: {
     action: v.string(),
     captureId: v.optional(v.id("capture_queue")),
-    noteId: v.id("notes"),
+    noteId: v.optional(v.id("notes")), // Optional for skip actions
     notePath: v.string(),
     noteTitle: v.string(),
     suggestedArea: v.string(),
