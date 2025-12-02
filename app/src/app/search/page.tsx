@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Search as SearchIcon, FileText } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -48,8 +49,20 @@ function getSnippet(content: string, query: string, maxLength = 150): string {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  
+  const [query, setQuery] = useState(initialQuery);
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
+  
+  // Update when URL query param changes
+  useEffect(() => {
+    const q = searchParams.get("q") || "";
+    if (q) {
+      setQuery(q);
+      setSearchTerm(q);
+    }
+  }, [searchParams]);
   
   const results = useQuery(
     api.notes.search,

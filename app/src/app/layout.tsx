@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConvexClientProvider } from "@/lib/convex";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { GlobalSearch } from "@/components/global-search";
 
 const roboto = Roboto({
   variable: "--font-sans",
@@ -40,8 +41,9 @@ export default function RootLayout({
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+              <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
+                <GlobalSearch />
               </header>
               <div className="flex-1 overflow-auto">
                 {children}
