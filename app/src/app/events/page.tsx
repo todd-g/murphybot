@@ -14,13 +14,23 @@ import {
   Download,
   ChevronLeft,
   X,
-  Check
+  Check,
+  CalendarPlus
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { calendarProviders, type CalendarEvent } from "@/lib/calendar";
 
 // Category configuration
 const categories = [
@@ -456,6 +466,46 @@ export default function EventsPage() {
                           
                           {/* Actions */}
                           <div className="flex items-center gap-1">
+                            {/* Add to Calendar dropdown */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  title="Add to calendar"
+                                >
+                                  <CalendarPlus className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Add to Calendar</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {calendarProviders.map((provider) => {
+                                  const calEvent: CalendarEvent = {
+                                    title: event.title,
+                                    description: event.description,
+                                    startDate: event.startDate,
+                                    endDate: event.endDate,
+                                    allDay: event.allDay,
+                                    location: event.location,
+                                  };
+                                  const url = provider.generateUrl(calEvent);
+                                  return (
+                                    <DropdownMenuItem key={provider.id} asChild>
+                                      <a 
+                                        href={url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="cursor-pointer"
+                                      >
+                                        {provider.name}
+                                      </a>
+                                    </DropdownMenuItem>
+                                  );
+                                })}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                             <Button 
                               variant="ghost" 
                               size="sm"
@@ -499,4 +549,5 @@ export default function EventsPage() {
     </main>
   );
 }
+
 

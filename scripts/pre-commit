@@ -60,3 +60,4 @@ python3 "$SCRIPTS_DIR/sync_notes.py" $FILES
 echo "Convex sync complete!"
 
 
+

@@ -152,3 +152,4 @@ Automatically syncs staged markdown files to Convex before each commit.
 MIT
 
 
+

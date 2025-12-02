@@ -29,3 +29,4 @@ echo "✅ Deploy complete!"
 echo "   - Convex: https://brazen-meerkat-177.convex.cloud"
 echo "   - Vercel: https://murphybot.vercel.app"
 
+
