@@ -202,6 +202,42 @@ export default function ActivityPage() {
                             <img src={activity.debug.imageUrl} alt="Captured" className="mt-1 max-h-32 rounded border" />
                           </div>
                         )}
+                        
+                        {/* Full System Prompt */}
+                        {activity.debug.fullSystemPrompt && (
+                          <details className="mt-3 border border-border/30 rounded p-2">
+                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                              📋 Full System Prompt ({activity.debug.fullSystemPrompt.length.toLocaleString()} chars)
+                            </summary>
+                            <pre className="mt-2 text-xs whitespace-pre-wrap break-words max-h-96 overflow-auto bg-background/50 p-2 rounded">
+                              {activity.debug.fullSystemPrompt}
+                            </pre>
+                          </details>
+                        )}
+                        
+                        {/* Full User Message */}
+                        {activity.debug.fullUserMessage && (
+                          <details className="mt-2 border border-border/30 rounded p-2">
+                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                              💬 Full User Message
+                            </summary>
+                            <pre className="mt-2 text-xs whitespace-pre-wrap break-words max-h-48 overflow-auto bg-background/50 p-2 rounded">
+                              {activity.debug.fullUserMessage}
+                            </pre>
+                          </details>
+                        )}
+                        
+                        {/* Full Claude Response */}
+                        {activity.debug.fullClaudeResponse && (
+                          <details className="mt-2 border border-border/30 rounded p-2">
+                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                              🤖 Full Claude Response
+                            </summary>
+                            <pre className="mt-2 text-xs whitespace-pre-wrap break-words max-h-48 overflow-auto bg-background/50 p-2 rounded">
+                              {activity.debug.fullClaudeResponse}
+                            </pre>
+                          </details>
+                        )}
                       </div>
                     </details>
                   )}

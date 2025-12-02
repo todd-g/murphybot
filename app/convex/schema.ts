@@ -50,6 +50,10 @@ export default defineSchema({
       captureText: v.optional(v.string()),
       captureHadImage: v.boolean(),
       imageUrl: v.optional(v.string()),
+      // Full prompt and response for debugging
+      fullSystemPrompt: v.optional(v.string()),
+      fullUserMessage: v.optional(v.string()),
+      fullClaudeResponse: v.optional(v.string()),
     })),
   }).index("by_createdAt", ["createdAt"]),
 });

@@ -285,7 +285,7 @@ Provide your JSON response.`,
       console.log(`System prompt preview (first 500 chars): ${systemPrompt.slice(0, 500)}`);
       
       const requestBody = {
-        model: "claude-3-haiku-20240307", // Claude 3 Haiku - fast, supports vision
+        model: "claude-sonnet-4-5-20250929", // Claude Sonnet 4.5
         max_tokens: 2048,
         system: systemPrompt,
         messages: [
@@ -426,6 +426,10 @@ Provide your JSON response.`,
           captureText: capture.text?.slice(0, 200),
           captureHadImage: hasImage,
           imageUrl: capture.fileUrl || undefined,
+          // Full prompt and response for debugging
+          fullSystemPrompt: systemPrompt,
+          fullUserMessage: JSON.stringify(messageContent),
+          fullClaudeResponse: responseText,
         },
       });
 

@@ -129,6 +129,9 @@ export const logActivity = internalMutation({
       captureText: v.optional(v.string()),
       captureHadImage: v.boolean(),
       imageUrl: v.optional(v.string()),
+      fullSystemPrompt: v.optional(v.string()),
+      fullUserMessage: v.optional(v.string()),
+      fullClaudeResponse: v.optional(v.string()),
     })),
   },
   handler: async (ctx, args) => {
