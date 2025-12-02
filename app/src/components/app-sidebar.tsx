@@ -8,6 +8,7 @@ import {
   Search,
   Clock,
   Sparkles,
+  Calendar,
 } from "lucide-react"
 
 import {
@@ -71,6 +72,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <Link href="/capture" onClick={handleClick}>
                   <Sparkles className="size-4" />
                   <span>Capture</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/events" onClick={handleClick}>
+                  <Calendar className="size-4" />
+                  <span>Events</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

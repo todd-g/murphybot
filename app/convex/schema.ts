@@ -32,6 +32,22 @@ export default defineSchema({
       filterFields: ["jdId"],
     }),
 
+  // Events - calendar items with proper date handling
+  events: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    startDate: v.string(), // ISO date: "2025-12-25" or datetime: "2025-12-25T14:00:00"
+    endDate: v.optional(v.string()), // Optional end date/time
+    allDay: v.boolean(),
+    location: v.optional(v.string()),
+    jdCategory: v.string(), // "50.01" local, "50.02" travel, "50.03" appointments, "50.04" holidays
+    noteId: v.optional(v.id("notes")), // Link to related note if exists
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_startDate", ["startDate"])
+    .index("by_jdCategory", ["jdCategory"]),
+
   // Activity log - tracks AI auto-processing actions
   activity_log: defineTable({
     createdAt: v.number(),
